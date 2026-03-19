@@ -1,0 +1,80 @@
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { ReactFlowProvider } from '@xyflow/react'
+import { useState, useEffect } from 'react'
+import Toolbar from '../components/toolbar/Toolbar'
+import Sidebar from '../components/sidebar/Sidebar'
+import DiagramCanvas from '../components/canvas/DiagramCanvas'
+import { createProject, useProjectStore, setActiveProject } from '../store/project.store'
+import ProjectSetupPopup from '../components/dashboard/ProjectSetupPopup'
+
+export const Route = createFileRoute('/$slug')({
+  component: SlugPage,
+})
+
+function SlugPage() {
+  const { slug } = Route.useParams()
+  const projects = useProjectStore((s) => s.projects)
+  const activeProjectId = useProjectStore((s) => s.activeProjectId)
+  const navigate = useNavigate()
+  
+  const project = projects.find(p => p.slug === slug)
+  const [modalOpen, setModalOpen] = useState(false)
+
+  // Sync active project state based on URL slug
+  useEffect(() => {
+    if (project && project.id !== activeProjectId) {
+      setActiveProject(project.id)
+    } else if (!project && projects.length > 0) {
+       // If slug is invalid but we have projects, maybe redirect to home?
+    }
+  }, [project, activeProjectId, projects.length])
+
+  const handleCreateProject = (name: string, description?: string) => {
+    const newProject = createProject(name, description)
+    setModalOpen(false)
+    navigate({ to: '/$slug', params: { slug: newProject.slug } })
+  }
+
+  // If no project found for this slug, we can show the "Create" popup or redirect
+  if (!project) {
+    return (
+       <div className="flex flex-col h-screen items-center justify-center bg-background p-4">
+         <h1 className="text-xl font-bold mb-2 text-foreground">Project not found</h1>
+         <p className="text-muted-foreground mb-6">The project you're looking for doesn't exist or has been moved.</p>
+         <button 
+           onClick={() => navigate({ to: '/projects' })}
+           className="px-4 py-2 bg-primary text-white rounded-lg font-medium"
+         >
+           Browse Projects
+         </button>
+       </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col h-screen overflow-hidden bg-background">
+      <div className="relative z-[100] w-full pointer-events-auto">
+        <Toolbar />
+      </div>
+      <div className="flex-1 flex overflow-hidden relative">
+        <main className="flex-1 relative overflow-hidden z-10">
+          <ReactFlowProvider>
+            <DiagramCanvas />
+          </ReactFlowProvider>
+        </main>
+        
+        <div className="absolute inset-y-4 left-4 z-[200] pointer-events-none">
+          <div className="pointer-events-auto h-full">
+            <Sidebar />
+          </div>
+        </div>
+      </div>
+
+      <ProjectSetupPopup
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onCreate={handleCreateProject}
+      />
+    </div>
+  )
+}

@@ -1,0 +1,274 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+/* Ensure this file exists or is installed via shadcn setup if needed */
+/* @import "shadcn/tailwind.css"; */
+@plugin "@tailwindcss/typography";
+
+/* ─── Fonts: General Sans ─────────────────────────────────────────────── */
+@font-face {
+  font-family: "General Sans";
+  src: url("/fonts/GeneralSans-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "General Sans";
+  src: url("/fonts/GeneralSans-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "General Sans";
+  src: url("/fonts/GeneralSans-Semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "General Sans";
+  src: url("/fonts/GeneralSans-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-general-sans);
+  --font-serif: var(--font-general-sans);
+  --font-heading: var(--font-general-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-olive-50: #f6f6eb;
+  --color-olive-100: #e9e8c8;
+  --color-olive-200: #d4d193;
+  --color-olive-300: #bfb95e;
+  --color-olive-400: #a9a239;
+  --color-olive-500: #8b8526;
+  --color-olive-600: #6d6820;
+  --color-olive-700: #524e1c;
+  --color-olive-800: #44401b;
+  --color-olive-900: #3b371c;
+  --color-olive-950: #1f1d0c;
+  --color-lime-50: #f7fee7;
+  --color-lime-100: #ecfccb;
+  --color-lime-200: #d9f99d;
+  --color-lime-300: #bef264;
+  --color-lime-400: #a3e635;
+  --color-lime-500: #84cc16;
+  --color-lime-600: #65a30d;
+  --color-lime-700: #4d7c0f;
+  --color-lime-800: #3f6212;
+  --color-lime-900: #365314;
+  --color-lime-950: #1a2e05;
+  --color-orange: #8b8526;
+  --color-primary-50: #f7fee7;
+  --color-primary-100: #ecfccb;
+  --color-primary-200: #d9f99d;
+  --color-primary-300: #bef264;
+  --color-primary-400: #a3e635;
+  --color-primary-500: #84cc16;
+  --color-primary-600: #65a30d;
+  --color-primary-700: #4d7c0f;
+  --color-primary-800: #3f6212;
+  --color-primary-900: #365314;
+  --color-primary-950: #1a2e05;
+  --color-primary: #8b8526;
+}
+
+:root {
+  --font-general-sans: "General Sans", ui-sans-serif, system-ui, sans-serif;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: var(--color-orange);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.58 0.22 27);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: var(--color-orange);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Preserve current custom variables */
+  --bg: #f8f8f7;
+  --surface: #ffffff;
+  --surface-subtle: #f4f4f2;
+  --border-strong: rgba(0, 0, 0, 0.14);
+  --text: #111110;
+  --text-muted: #6f6e6b;
+  --text-faint: #a8a29e;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: var(--color-orange);
+  --primary-foreground: oklch(0.15 0 0);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.371 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: var(--color-orange);
+  --sidebar-primary-foreground: oklch(0.15 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    @apply bg-transparent text-foreground;
+  }
+  /* Standardized Typography */
+  h1 {
+    @apply font-serif text-5xl font-bold tracking-normal text-olive-950 lg:text-6xl dark:text-primary-50;
+  }
+  h2 {
+    @apply font-serif text-4xl leading-normal font-bold tracking-normal text-olive-950 md:text-5xl dark:text-primary-50;
+  }
+  h3 {
+    @apply font-serif text-3xl font-bold tracking-normal text-olive-950 md:text-4xl dark:text-primary-200;
+  }
+  h4 {
+    @apply font-serif text-2xl font-bold tracking-normal text-olive-950 dark:text-primary-200;
+  }
+  h5 {
+    @apply font-serif text-xl font-bold tracking-normal text-olive-950 dark:text-primary-200;
+  }
+  h6 {
+    @apply font-serif text-lg font-bold tracking-normal text-olive-950 dark:text-primary-200;
+  }
+  p {
+    @apply font-sans text-base leading-relaxed font-normal text-olive-950/90 lg:text-base dark:text-muted-foreground;
+  }
+  span {
+    @apply font-sans text-sm leading-relaxed font-normal;
+  }
+  label {
+    @apply font-sans text-olive-900 lg:text-base dark:text-muted-foreground;
+  }
+  li {
+    @apply font-sans;
+  }
+}
+
+@layer utilities {
+  .banner-feature-gradient {
+    background-image: radial-gradient(
+      125% 125% at 50% 10%,
+      rgba(255, 255, 255, 0.7) 0%,
+      rgba(246, 246, 235, 0.85) 100%
+    );
+  }
+
+  .dark .banner-feature-gradient {
+    background-image: radial-gradient(
+      125% 125% at 50% 10%,
+      rgba(31, 29, 12, 0.7) 0%,
+      rgba(15, 14, 6, 0.85) 100%
+    );
+  }
+}
+
+.lucide {
+  stroke-width: 3px;
+}
+
+.react-flow__controls {
+  box-shadow: none !important;
+  border: 0.5px solid var(--border) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+.react-flow__controls-button {
+  border: none !important;
+  border-bottom: 0.5px solid var(--border) !important;
+  background: var(--card) !important;
+}
+.react-flow__controls-button:hover {
+  background: var(--muted) !important;
+}
+.react-flow__minimap {
+  border: 0.5px solid var(--border) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
