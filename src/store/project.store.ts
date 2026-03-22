@@ -152,6 +152,7 @@ async function migrateLocalToSupabase(user: User, localProjects: Project[]) {
     // Load canvas data for this local project
     let canvasData = { nodes: [], edges: [], edgeCounter: 0 }
     try {
+      // Check specific project storage first, then legacy fallback
       const raw = localStorage.getItem(`sysdesign-diagram-${p.id}`) || localStorage.getItem('sysdesign-v2')
       if (raw) canvasData = JSON.parse(raw)
     } catch (e) {}
@@ -170,15 +171,24 @@ async function migrateLocalToSupabase(user: User, localProjects: Project[]) {
     })
 
     if (error) {
-      if (error.code === '23505') continue // Already exists
-      console.error('Migration error for project:', p.name, error.message)
-    } else {
-      // Clear local storage for this project after successful migration (optional but clean)
-      localStorage.removeItem(`sysdesign-diagram-${p.id}`)
+      if (error.code === '23505') {
+        console.log(`Project ${p.name} already exists in cloud, skipping insert.`)
+      } else {
+        console.error('Migration error for project:', p.name, error.message)
+        // If error is project limit, we might want to stop migrating others
+        if (error.message.includes('limit')) break
+      }
     }
+    
+    // Always clear the specific project diagram from local storage to avoid double-migration
+    localStorage.removeItem(`sysdesign-diagram-${p.id}`)
   }
-  // Clear the local project list metadata as well
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ projects: [], activeProjectId: null }))
+
+  // Clear the main local project list and active project index completely
+  localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem('active_project_id')
+  // For legacy support
+  localStorage.removeItem('sysdesign-v2')
 }
 
 // Sync projects from Supabase
@@ -204,22 +214,22 @@ async function syncFromSupabase() {
     updatedAt: new Date(p.updated_at).getTime(),
   }))
 
-  // Trigger migration if cloud is empty and we have local projects
+  // Trigger migration if we have local projects
   const local = load()
-  if (projectList.length === 0 && local.projects && local.projects.length > 0 && user) {
+  if (local.projects && local.projects.length > 0 && user) {
     projectStore.setState((s: ProjectState) => ({ ...s, migrating: true }))
     await migrateLocalToSupabase(user, local.projects)
     
-    // Re-sync after migration
-    const { data: migratedProjects } = await supabase
+    // Refresh the list after migration
+    const { data: refreshed } = await supabase
       .from('projects')
       .select('id, slug, name, description, created_at, updated_at')
       .order('updated_at', { ascending: false })
     
-    if (migratedProjects) {
+    if (refreshed) {
       projectStore.setState((s: ProjectState) => ({
         ...s,
-        projects: migratedProjects.map(p => ({
+        projects: refreshed.map(p => ({
           id: p.id,
           slug: p.slug,
           name: p.name,
