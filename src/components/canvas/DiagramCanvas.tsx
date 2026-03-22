@@ -1,25 +1,49 @@
-import { useCallback, useRef, useEffect, useState } from 'react'
-import { useTheme } from 'next-themes'
+import { useCallback, useRef, useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import {
-  ReactFlow, Background, Controls, MiniMap, SelectionMode, useReactFlow,
-  type OnNodesChange, type OnEdgesChange, type OnConnect, type NodeTypes, type EdgeTypes,
-} from '@xyflow/react'
-import '@xyflow/react/dist/style.css'
+  ReactFlow,
+  Background,
+  Controls,
+  MiniMap,
+  SelectionMode,
+  useReactFlow,
+  type OnNodesChange,
+  type OnEdgesChange,
+  type OnConnect,
+  type NodeTypes,
+  type EdgeTypes,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 
 import {
-  canvasStore, applyNodeChangesToStore, applyEdgeChangesToStore,
-  connectNodes, addNode, deleteSelected, undo, redo, groupSelected, updateEdgeConnection, useCanvasStore
-} from '../../store/canvas.store'
-import { CATEGORY_STYLE, type NodeTemplate } from '../../types/diagram'
-import type { DiagramNode, DiagramEdge } from '../../types/diagram'
+  canvasStore,
+  applyNodeChangesToStore,
+  applyEdgeChangesToStore,
+  connectNodes,
+  addNode,
+  deleteSelected,
+  undo,
+  redo,
+  groupSelected,
+  updateEdgeConnection,
+  useCanvasStore,
+} from "../../store/canvas.store";
+import { CATEGORY_STYLE, type NodeTemplate } from "../../types/diagram";
+import type { DiagramNode, DiagramEdge } from "../../types/diagram";
 import { cn } from "../../lib/utils";
-import DiagramNodeComponent from './DiagramNode'
-import DiagramEdgeComponent from './DiagramEdge'
-import { IconMouse, IconClick, IconKeyboard, IconX, IconInfoCircle } from '@tabler/icons-react'
+import DiagramNodeComponent from "./DiagramNode";
+import DiagramEdgeComponent from "./DiagramEdge";
+import {
+  IconMouse,
+  IconClick,
+  IconKeyboard,
+  IconX,
+  IconInfoCircle,
+} from "@tabler/icons-react";
 
-const nodeTypes: NodeTypes = { diagram: DiagramNodeComponent }
-const edgeTypes: EdgeTypes = { smoothstep: DiagramEdgeComponent }
-let nodeCounter = Date.now()
+const nodeTypes: NodeTypes = { diagram: DiagramNodeComponent };
+const edgeTypes: EdgeTypes = { smoothstep: DiagramEdgeComponent };
+let nodeCounter = Date.now();
 
 /**
  * The main diagramming canvas powered by React Flow.
@@ -27,104 +51,125 @@ let nodeCounter = Date.now()
  * and integration with the canvas store for persistence and history.
  */
 export default function DiagramCanvas() {
-  const { resolvedTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-  const isDark = mounted && (resolvedTheme === 'dark')
-  const nodes = useCanvasStore((s) => s.nodes)
-  const edges = useCanvasStore((s) => s.edges)
-  const snapToGrid = useCanvasStore((s) => s.snapToGrid)
-  const wrapRef = useRef<HTMLDivElement>(null)
-  const { fitView } = useReactFlow()
-  const [showDelete, setShowDelete] = useState(false)
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted && resolvedTheme === "dark";
+  const nodes = useCanvasStore((s) => s.nodes);
+  const edges = useCanvasStore((s) => s.edges);
+  const snapToGrid = useCanvasStore((s) => s.snapToGrid);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const { fitView } = useReactFlow();
+  const [showDelete, setShowDelete] = useState(false);
   const [showHint, setShowHint] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('hide-canvas-hint') !== 'true'
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("hide-canvas-hint") !== "true";
     }
-    return true
-  })
+    return true;
+  });
 
   const toggleHint = () => {
-    const newState = !showHint
-    setShowHint(newState)
+    const newState = !showHint;
+    setShowHint(newState);
     if (newState === false) {
-      localStorage.setItem('hide-canvas-hint', 'true')
+      localStorage.setItem("hide-canvas-hint", "true");
     } else {
-      localStorage.removeItem('hide-canvas-hint')
+      localStorage.removeItem("hide-canvas-hint");
     }
-  }
+  };
 
-  const selectedCount = nodes.filter(n => n.selected).length + edges.filter(e => e.selected).length
+  const selectedCount =
+    nodes.filter((n) => n.selected).length +
+    edges.filter((e) => e.selected).length;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement).tagName
-      if (typeof tag === 'string' && (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT')) return
-      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo() }
-      if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo() }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'g') { e.preventDefault(); groupSelected() }
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        const hasSelection = canvasStore.state.nodes.some(n => n.selected) || canvasStore.state.edges.some(e => e.selected)
+      const tag = (e.target as HTMLElement).tagName;
+      if (
+        typeof tag === "string" &&
+        (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT")
+      )
+        return;
+      if ((e.metaKey || e.ctrlKey) && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      }
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        (e.key === "y" || (e.key === "z" && e.shiftKey))
+      ) {
+        e.preventDefault();
+        redo();
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "g") {
+        e.preventDefault();
+        groupSelected();
+      }
+      if (e.key === "Delete" || e.key === "Backspace") {
+        const hasSelection =
+          canvasStore.state.nodes.some((n) => n.selected) ||
+          canvasStore.state.edges.some((e) => e.selected);
         if (hasSelection) {
-          setShowDelete(true)
+          setShowDelete(true);
         }
       }
-      if (e.key === 'f' || e.key === 'F') {
-        e.preventDefault()
-        const selectedNodes = canvasStore.state.nodes.filter((n) => n.selected)
-        if (selectedNodes.length > 0) fitView({ nodes: selectedNodes, duration: 400 })
-        else fitView({ duration: 400 })
+      if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
+        const selectedNodes = canvasStore.state.nodes.filter((n) => n.selected);
+        if (selectedNodes.length > 0)
+          fitView({ nodes: selectedNodes, duration: 400 });
+        else fitView({ duration: 400 });
       }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   useEffect(() => {
-    if (!showDelete) return
+    if (!showDelete) return;
     const onModalKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        deleteSelected()
-        setShowDelete(false)
+      if (e.key === "Enter") {
+        deleteSelected();
+        setShowDelete(false);
       }
-      if (e.key === 'Escape') {
-        setShowDelete(false)
+      if (e.key === "Escape") {
+        setShowDelete(false);
       }
-    }
-    window.addEventListener('keydown', onModalKey)
-    return () => window.removeEventListener('keydown', onModalKey)
-  }, [showDelete])
+    };
+    window.addEventListener("keydown", onModalKey);
+    return () => window.removeEventListener("keydown", onModalKey);
+  }, [showDelete]);
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => applyNodeChangesToStore(changes),
-    []
-  )
+    [],
+  );
   const onEdgesChange: OnEdgesChange = useCallback(
     (changes) => applyEdgeChangesToStore(changes),
-    []
-  )
-  const onConnect: OnConnect = useCallback((conn) => connectNodes(conn), [])
+    [],
+  );
+  const onConnect: OnConnect = useCallback((conn) => connectNodes(conn), []);
 
   const onReconnect = useCallback((oldEdge: any, newConnection: any) => {
-    updateEdgeConnection(oldEdge as DiagramEdge, newConnection)
-  }, [])
+    updateEdgeConnection(oldEdge as DiagramEdge, newConnection);
+  }, []);
 
   const onDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-  }, [])
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  }, []);
 
   const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    const raw = e.dataTransfer.getData('application/sysdesign')
-    if (!raw) return
-    const template: NodeTemplate = JSON.parse(raw)
-    const rect = wrapRef.current?.getBoundingClientRect()
-    if (!rect) return
-    nodeCounter++
+    e.preventDefault();
+    const raw = e.dataTransfer.getData("application/sysdesign");
+    if (!raw) return;
+    const template: NodeTemplate = JSON.parse(raw);
+    const rect = wrapRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    nodeCounter++;
     const node: DiagramNode = {
       id: `node-${nodeCounter}`,
-      type: 'diagram',
+      type: "diagram",
       position: { x: e.clientX - rect.left - 75, y: e.clientY - rect.top - 40 },
       data: {
         label: template.label,
@@ -133,34 +178,42 @@ export default function DiagramCanvas() {
         icon: template.icon,
         description: template.description,
       },
+    };
+    addNode(node);
+  }, []);
+
+  const onSelectionEnd = useCallback(() => {
+    const selectedNodes = canvasStore.state.nodes.filter((n) => n.selected);
+    if (selectedNodes.length > 1) {
+      groupSelected();
     }
-    addNode(node)
-  }, [])
+  }, []);
 
   return (
     <div ref={wrapRef} style={{ width: "100%", height: "100%" }}>
       <ReactFlow
         id="sys-diagram"
         nodes={nodes}
-
         edges={edges}
-        colorMode={isDark ? 'dark' : 'light'}
+        colorMode={isDark ? "dark" : "light"}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onReconnect={onReconnect}
         onDragOver={onDragOver}
         onDrop={onDrop}
+        onSelectionEnd={onSelectionEnd}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
         fitViewOptions={{ padding: 0.25 }}
         deleteKeyCode={null}
         proOptions={{ hideAttribution: true }}
-        panOnDrag={[1, 2, 3]}
+        panOnDrag={[2, 3]}
         selectionMode={SelectionMode.Partial}
         panOnScroll={true}
-        selectionOnDrag={false}
+        selectionOnDrag={true}
+        selectionKeyCode={null}
         snapToGrid={snapToGrid}
         snapGrid={[20, 20]}
       >
@@ -170,8 +223,11 @@ export default function DiagramCanvas() {
           pannable
           zoomable
           nodeColor={(n) => {
-            const cat = (n.data as { category?: string })?.category
-            return cat ? CATEGORY_STYLE[cat as keyof typeof CATEGORY_STYLE]?.color ?? '#aaa' : '#aaa'
+            const cat = (n.data as { category?: string })?.category;
+            return cat
+              ? (CATEGORY_STYLE[cat as keyof typeof CATEGORY_STYLE]?.color ??
+                  "#aaa")
+              : "#aaa";
           }}
         />
       </ReactFlow>
@@ -185,10 +241,12 @@ export default function DiagramCanvas() {
                 Delete items?
               </h3>
               <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
-                Are you sure you want to delete {selectedCount} selected item{selectedCount !== 1 ? 's' : ''}? This action can be undone later with Ctrl+Z.
+                Are you sure you want to delete {selectedCount} selected item
+                {selectedCount !== 1 ? "s" : ""}? This action can be undone
+                later with Ctrl+Z.
               </p>
             </div>
-            
+
             <div className="flex items-center justify-end gap-2.5 mt-2">
               <button
                 onClick={() => setShowDelete(false)}
@@ -214,28 +272,43 @@ export default function DiagramCanvas() {
         {showHint && (
           <div className="animate-in slide-in-from-right-4 fade-in duration-300 pointer-events-auto">
             <div className="relative bg-card/80 backdrop-blur-md border border-border/50 rounded-2xl p-5 shadow-2xl w-[260px] overflow-hidden">
-              <button 
+              <button
                 onClick={toggleHint}
                 className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-all cursor-pointer"
               >
                 <IconX size={14} />
               </button>
-              
+
               <div className="flex items-center gap-2 mb-4">
                 <div className="p-2 bg-primary/10 rounded-xl">
                   <IconMouse size={18} className="text-primary" />
                 </div>
-                <h4 className="text-[13px] font-bold tracking-tight">Navigation Tips</h4>
+                <h4 className="text-[13px] font-bold tracking-tight">
+                  Navigation Tips
+                </h4>
               </div>
 
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="p-1.5 bg-muted/50 rounded-lg shrink-0">
-                    <IconClick size={14} className="text-muted-foreground" />
+                    <IconMouse size={14} className="text-muted-foreground" />
                   </div>
-                  <div>
-                    <div className="text-[11px] font-bold">Pan Canvas</div>
-                    <div className="text-[10px] text-muted-foreground leading-relaxed">Left-click & drag or use Right-click anywhere.</div>
+                  <div className="min-w-0">
+                    <div className="text-[11px] font-bold">Canvas Control</div>
+                    <div className="text-[10px] text-muted-foreground leading-relaxed">
+                      <span className="block font-medium text-foreground/80">
+                        Right-click + Drag
+                      </span>{" "}
+                      Pan the design board
+                      <span className="block font-medium text-foreground/80 mt-1">
+                        Left-click + Drag
+                      </span>{" "}
+                      Draw box to Auto-Group
+                      <span className="block font-medium text-foreground/80 mt-1">
+                        Scroll Wheel
+                      </span>{" "}
+                      Zoom in and out
+                    </div>
                   </div>
                 </div>
 
@@ -243,27 +316,65 @@ export default function DiagramCanvas() {
                   <div className="p-1.5 bg-muted/50 rounded-lg shrink-0">
                     <IconKeyboard size={14} className="text-muted-foreground" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="text-[11px] font-bold">Shortcuts</div>
-                    <div className="text-[10px] text-muted-foreground leading-relaxed">
-                      <kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[9px] font-mono">F</kbd> Fit view, <kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[9px] font-mono">G</kbd> Group.
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-1">
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                        <kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[9px] font-mono leading-none">
+                          ^G
+                        </kbd>
+                        <span>Group</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                        <kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[9px] font-mono leading-none">
+                          F
+                        </kbd>
+                        <span>Fit View</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                        <kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[9px] font-mono leading-none">
+                          Del
+                        </kbd>
+                        <span>Delete</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                        <kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[9px] font-mono leading-none">
+                          ^Z
+                        </kbd>
+                        <span>Undo</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground col-span-2">
+                        <kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[9px] font-mono leading-none">
+                          ^Y
+                        </kbd>
+                        <span>Redo (or ^⇧Z)</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
                   <div className="p-1.5 bg-muted/50 rounded-lg shrink-0">
-                    <IconMouse size={14} className="text-muted-foreground rotate-180" />
+                    <IconClick size={14} className="text-muted-foreground" />
                   </div>
-                  <div>
-                    <div className="text-[11px] font-bold">Zooming</div>
-                    <div className="text-[10px] text-muted-foreground leading-relaxed">Use your mouse wheel to zoom in & out of the design.</div>
+                  <div className="min-w-0">
+                    <div className="text-[11px] font-bold">Editing</div>
+                    <div className="text-[10px] text-muted-foreground leading-relaxed">
+                      <span className="block font-medium text-foreground/80">
+                        Double-click
+                      </span>{" "}
+                      Open editor for nodes or edges
+                      <span className="block font-medium text-foreground/80 mt-1">
+                        Drag Handles
+                      </span>{" "}
+                      Create new connections
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div className="mt-5 pt-4 border-t border-border/40">
-                <button 
+                <button
                   onClick={toggleHint}
                   className="w-full py-1.5 text-[10px] font-bold bg-muted/50 hover:bg-primary hover:text-white rounded-lg transition-all cursor-pointer"
                 >
@@ -278,9 +389,9 @@ export default function DiagramCanvas() {
           onClick={toggleHint}
           className={cn(
             "p-3 rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 pointer-events-auto cursor-pointer",
-            showHint 
-              ? "bg-primary text-white border-primary translate-x-12 opacity-0" 
-              : "bg-card/80 text-muted-foreground hover:text-foreground border-border/50 hover:border-primary/50 hover:shadow-primary/10"
+            showHint
+              ? "bg-primary text-white border-primary translate-x-12 opacity-0"
+              : "bg-card/80 text-muted-foreground hover:text-foreground border-border/50 hover:border-primary/50 hover:shadow-primary/10",
           )}
           title="Show Navigation Tips"
         >
@@ -288,5 +399,5 @@ export default function DiagramCanvas() {
         </button>
       </div>
     </div>
-  )
+  );
 }

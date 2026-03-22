@@ -29,12 +29,23 @@ export interface InputProps
   size?: VariantProps<typeof inputVariants>["size"];
 }
 
+// function Input({ className, type, size, ...props }: InputProps) {
+//   return (
+//     <InputPrimitive
+//       type={type}
+//       data-slot="input"
+//       className={cn(inputVariants({ size }), className)}
+//       {...props}
+//     />
+//   );
+// }
+
 function Input({ className, type, size, ...props }: InputProps) {
   return (
     <InputPrimitive
       type={type}
       data-slot="input"
-      className={cn(inputVariants({ size }), className)}
+      className={cn(inputVariants({ size, className }))}
       {...props}
     />
   );

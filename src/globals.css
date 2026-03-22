@@ -234,6 +234,24 @@
 }
 
 @layer utilities {
+  .nodrag-form h6 {
+    all: unset;
+  }
+  .nodrag-form span {
+    all: unset;
+  }
+}
+
+@layer base {
+  .nodrag-form h6,
+  .nodrag-form span,
+  .nodrag-form p,
+  .nodrag-form label {
+    all: unset;
+  }
+}
+
+@layer utilities {
   .banner-feature-gradient {
     background-image: radial-gradient(
       125% 125% at 50% 10%,

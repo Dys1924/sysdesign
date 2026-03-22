@@ -1,21 +1,23 @@
-import { memo, useState, useCallback } from "react";
-import { Handle, Position } from "@xyflow/react";
-import type { NodeProps } from "@xyflow/react";
 import * as TablerIcons from "@tabler/icons-react";
+import type { NodeProps } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
+import { memo, useCallback, useState } from "react";
+import { cn } from "../../lib/utils";
+import { updateNodeMeta } from "../../store/canvas.store";
 import type { NodeMeta } from "../../types/diagram";
 import { CATEGORY_STYLE } from "../../types/diagram";
-import { updateNodeMeta } from "../../store/canvas.store";
-import { cn } from "../../lib/utils";
+import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "../ui/select";
-import { Button } from "../ui/button";
+import { Textarea } from "../ui/textarea";
+
+import { IconPencilBolt } from "@tabler/icons-react";
 
 type TablerIconComponent = React.FC<{
   size?: number;
@@ -186,8 +188,8 @@ function DiagramNode({ id, data, selected }: NodeProps) {
         <div className="flex flex-col gap-2 mt-1">
           <Input
             autoFocus
-            size="sm"
-            className="text-[10px]! nodrag"
+            size="xs"
+            className="nodrag py-1! text-[6px]!"
             placeholder="Label"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -197,8 +199,8 @@ function DiagramNode({ id, data, selected }: NodeProps) {
             }}
           />
           <Input
-            size="sm"
-            className="text-[10px]! nodrag"
+            size="xs"
+            className="nodrag py-1! text-[6px]!"
             placeholder="Owner (e.g. Auth Team)"
             value={draftOwner}
             onChange={(e) => setDraftOwner(e.target.value)}
@@ -209,8 +211,8 @@ function DiagramNode({ id, data, selected }: NodeProps) {
           <Textarea
             placeholder="Notes… (Shift+Enter to save)"
             value={draftNotes}
-            rows={2}
-            className="text-[10px]! resize-none nodrag"
+            rows={4}
+            className="resize-none nodrag px-2 py-1 text-[6px]! leading-tight min-h-4"
             onChange={(e) => setDraftNotes(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && e.shiftKey) {
@@ -223,20 +225,26 @@ function DiagramNode({ id, data, selected }: NodeProps) {
             value={draftStatus}
             onValueChange={(val) => setDraftStatus(val as Status)}
           >
-            <SelectTrigger className="h-8 text-[10px]! w-full nodrag">
-              <SelectValue placeholder="No status" className="text-[10px]!" />
+            <SelectTrigger
+              size="xs"
+              className="w-full nodrag text-[6px]! py-1! h-1"
+            >
+              <SelectValue
+                placeholder="No status"
+                className="text-[6px]! h-4!"
+              />
             </SelectTrigger>
             <SelectContent className="nodrag">
-              <SelectItem value="" className="text-[10px]!">
+              <SelectItem value="" className="">
                 No status
               </SelectItem>
-              <SelectItem value="existing" className="text-[10px]!">
+              <SelectItem value="existing" className="">
                 Existing
               </SelectItem>
-              <SelectItem value="planned" className="text-[10px]!">
+              <SelectItem value="planned" className="">
                 Planned
               </SelectItem>
-              <SelectItem value="deprecated" className="text-[10px]!">
+              <SelectItem value="deprecated" className="">
                 Deprecated
               </SelectItem>
             </SelectContent>
@@ -244,7 +252,8 @@ function DiagramNode({ id, data, selected }: NodeProps) {
           <Button
             onClick={commitEdit}
             variant="default"
-            className="w-full text-[10px]! active:scale-[0.98] transition-all cursor-pointer nodrag"
+            size={"sm"}
+            className="w-full text-[6px]! h-6 active:scale-[0.98] transition-all cursor-pointer nodrag"
           >
             Save
           </Button>
@@ -252,7 +261,10 @@ function DiagramNode({ id, data, selected }: NodeProps) {
       ) : (
         /* Read view */
         <div onDoubleClick={openEdit} className="cursor-text">
-          <h6 className="text-[8px] font-semibold">{meta.label as string}</h6>
+          <div className="flex flex-wrap gap-1 align-center align-self-center">
+            <IconPencilBolt size={10} stroke={1.8} />
+            <h6 className="text-[8px] font-semibold">{meta.label as string}</h6>
+          </div>
 
           {meta.description && (
             <div className="text-[7px] text-muted-foreground mt-0.5">
@@ -273,7 +285,7 @@ function DiagramNode({ id, data, selected }: NodeProps) {
               {meta.notes && (
                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                   <TablerIcons.IconNotes size={10} stroke={2} />
-                  <span className="text-[10px]">Notes attached</span>
+                  <span className="text-[7px]">Notes attached</span>
                 </div>
               )}
             </div>

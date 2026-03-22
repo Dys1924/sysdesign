@@ -21,7 +21,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "SysDesign — Professional Systems Architecture Tool" },
+      { title: "SysDesign - Professional Systems Architecture Tool" },
       {
         name: "description",
         content:
@@ -34,7 +34,7 @@ export const Route = createRootRoute({
       },
       {
         name: "og:title",
-        content: "SysDesign — Professional Systems Architecture Tool",
+        content: "SysDesign - Professional Systems Architecture Tool",
       },
       {
         name: "og:description",
@@ -50,7 +50,7 @@ export const Route = createRootRoute({
       { name: "twitter:card", content: "summary_large_image" },
       {
         name: "twitter:title",
-        content: "SysDesign — Systems Design Visualizer",
+        content: "SysDesign - Systems Design Visualizer",
       },
       {
         name: "twitter:description",

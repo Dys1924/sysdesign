@@ -19,7 +19,7 @@ import {
   IconZoomIn,
   IconZoomOut,
 } from "@tabler/icons-react";
-import { TEMPLATES, type Template } from "../../data/templates";
+import { type Template } from "../../data/templates";
 import {
   clearCanvas,
   groupSelected,
