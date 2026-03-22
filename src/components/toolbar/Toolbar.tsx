@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+
 import {
   IconLayoutGrid,
   IconTrash,
@@ -36,6 +37,7 @@ import {
 } from "../export/exportUtils";
 import { ThemeToggle } from "../ThemeToggle";
 import { Button } from "../ui/button";
+import { Logo } from "../ui/logo";
 
 const EXPORT_OPTIONS = [
   { key: "png", label: "PNG image", desc: "Raster, 2× resolution" },
@@ -57,10 +59,17 @@ export default function Toolbar() {
   const user = useProjectStore((s) => s.user);
   const loading = useProjectStore((s) => s.loading);
   const migrating = useProjectStore((s) => s.migrating);
-  const hasLocalProjects = useProjectStore((s) => s.projects.length > 0 && !s.user);
+  const hasLocalProjects = useProjectStore(
+    (s) => s.projects.length > 0 && !s.user,
+  );
 
   const location = useLocation();
-  const isCanvasRoute = location.pathname === "/" || location.pathname.split("/").length === 2 && location.pathname !== "/projects";
+  const navigate = useNavigate();
+
+  const isCanvasRoute =
+    location.pathname === "/" ||
+    (location.pathname.split("/").length === 2 &&
+      location.pathname !== "/projects");
 
   const [exportOpen, setExportOpen] = useState(false);
   const [projectMenuOpen, setProjectMenuOpen] = useState(false);
@@ -116,26 +125,18 @@ export default function Toolbar() {
   };
 
   return (
-    <header className="h-12 flex items-center justify-between px-4 border-b bg-card shrink-0">
+    <header className="h-12 flex items-center justify-between px-4 border-b bg-card shrink-0 relative z-500">
       {/* Left — brand + stats */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 relative">
-          <div className="w-6 h-6 rounded-md bg-foreground flex items-center justify-center">
-            <IconLayoutGrid
-              size={13}
-              stroke={1.8}
-              className="text-background"
-            />
-          </div>
-          <div
-            id="project-btn"
-            className="flex items-center gap-1.5 group cursor-pointer"
-          >
-            <span className="text-[13.5px] font-semibold text-foreground tracking-tight">
-              Sysdesign
-            </span>
-          </div>
-        </div>
+        <Link to="/" className="flex items-center gap-2 relative">
+          <Logo className="h-6 w-auto" />
+          <h1 className="sr-only">
+            {activeProject
+              ? `${activeProject.name} — SysDesign Architecture`
+              : "SysDesign — Professional Systems Architecture Designer"}
+          </h1>
+        </Link>
+
         <Link
           to="/projects"
           className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all select-none"
@@ -143,8 +144,97 @@ export default function Toolbar() {
           <IconFolder size={14} stroke={1.8} />
           Projects
         </Link>
+
+        {/* Project Selector Dropdown */}
+        <div className="relative flex items-center">
+          <Button
+            id="project-btn"
+            variant="ghost"
+            size="sm"
+            onClick={() => setProjectMenuOpen(!projectMenuOpen)}
+            className={`h-7 px-2 gap-1.5 text-[12px] font-semibold border border-transparent hover:border-border transition-all ${activeProject ? "text-foreground bg-primary/5 border-primary/20 hover:bg-primary/10" : "text-muted-foreground"}`}
+          >
+            <span className="max-w-[120px] truncate">
+              {activeProject ? activeProject.name : "Select Project"}
+            </span>
+            <IconChevronDown
+              size={12}
+              className={`transition-transform duration-200 ${projectMenuOpen ? "rotate-180" : ""}`}
+            />
+          </Button>
+
+          {projectMenuOpen && (
+            <div
+              id="project-menu"
+              className="absolute top-[calc(100%+6px)] left-0 z-500 bg-card border border-border
+                         rounded-xl p-1 min-w-[200px] shadow-xl shadow-black/10 animate-in fade-in slide-in-from-top-1"
+            >
+              <div className="px-3 py-1.5 border-b border-border/50 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                  Switch Project
+                </span>
+              </div>
+              <div className="max-h-[300px] overflow-y-auto">
+                {projects.map((p) => (
+                  <Button
+                    key={p.id}
+                    variant="ghost"
+                    onClick={() => {
+                      setActiveProject(p.id);
+                      setProjectMenuOpen(false);
+                      navigate({ to: "/$slug", params: { slug: p.slug } });
+                    }}
+                    className={`w-full justify-start px-3 py-2 h-auto text-left gap-2 ${p.id === activeProjectId ? "bg-primary/5 text-primary" : ""}`}
+                  >
+                    <IconFolder
+                      size={14}
+                      className={
+                        p.id === activeProjectId
+                          ? "text-primary"
+                          : "text-muted-foreground"
+                      }
+                    />
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[12.5px] font-medium truncate">
+                        {p.name}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground truncate">
+                        {new Date(p.updatedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+              {projects.length === 0 && (
+                <div className="px-3 py-4 text-center">
+                  <p className="text-[11px] text-muted-foreground italic">
+                    No projects yet
+                  </p>
+                </div>
+              )}
+              <div className="mt-1 pt-1 border-t border-border/50">
+                <Button
+                  onClick={() => {
+                    setProjectMenuOpen(false);
+                    navigate({ to: "/projects" });
+                  }}
+                  variant="ghost"
+                  className="w-full justify-start px-3 py-2 h-auto text-left gap-2 text-primary hover:text-primary hover:bg-primary/5"
+                >
+                  <IconSquarePlus size={14} />
+                  <span className="text-[12px] font-semibold">
+                    All Projects
+                  </span>
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
         <span className="text-border mx-1">|</span>
-        <span className={`text-[11.5px] text-muted-foreground transition-opacity ${isCanvasRoute ? 'opacity-100' : 'opacity-0'}`}>
+        <span
+          className={`text-[11.5px] text-muted-foreground transition-opacity ${isCanvasRoute ? "opacity-100" : "opacity-0"}`}
+        >
           {nodes.length} node{nodes.length !== 1 ? "s" : ""} · {edges.length}{" "}
           edge{edges.length !== 1 ? "s" : ""}
         </span>
@@ -153,7 +243,9 @@ export default function Toolbar() {
       {/* Right — actions */}
       <div className="flex items-center gap-1">
         {/* Canvas-specific actions */}
-        <div className={`flex items-center gap-1.5 transition-all duration-300 ${!isCanvasRoute ? 'opacity-30 pointer-events-none grayscale' : ''}`}>
+        <div
+          className={`flex items-center gap-1.5 transition-all duration-300 ${!isCanvasRoute ? "opacity-30 pointer-events-none grayscale" : ""}`}
+        >
           {/* Undo / Redo */}
           <Button
             onClick={undo}
@@ -225,7 +317,7 @@ export default function Toolbar() {
 
             {exportOpen && (
               <div
-                className="absolute top-[calc(100%+6px)] right-0 z-50 bg-card border border-border
+                className="absolute top-[calc(100%+6px)] right-0 z-500 bg-card border border-border
                                rounded-xl p-1 min-w-[172px] shadow-lg shadow-black/5"
               >
                 {EXPORT_OPTIONS.map((opt) => (
@@ -251,7 +343,7 @@ export default function Toolbar() {
         {/* Global actions (Theme, Auth) */}
         <div className="flex items-center gap-1.5 ml-1">
           <div className="w-px h-5 bg-border mx-1" />
-          
+
           <ThemeToggle />
 
           <div ref={userMenuRef} className="relative ml-1">
@@ -288,23 +380,49 @@ export default function Toolbar() {
                   className="gap-1.5 pl-2 pr-3"
                 >
                   {loading || migrating ? (
-                    <IconLoader2 size={14} stroke={1.8} className="animate-spin" />
+                    <IconLoader2
+                      size={14}
+                      stroke={1.8}
+                      className="animate-spin"
+                    />
                   ) : (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                      <path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.84z" fill="#FBBC05"/>
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        fill="#4285F4"
+                      />
+                      <path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853"
+                      />
+                      <path
+                        d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.84z"
+                        fill="#FBBC05"
+                      />
+                      <path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                        fill="#EA4335"
+                      />
                     </svg>
                   )}
-                  {migrating ? "Migrating…" : loading ? "Signing in…" : "Sign in"}
+                  {migrating
+                    ? "Migrating…"
+                    : loading
+                      ? "Signing in…"
+                      : "Sign in"}
                 </Button>
               </div>
             )}
 
             {userMenuOpen && user && (
               <div
-                className="absolute top-[calc(100%+6px)] right-0 z-50 bg-card border border-border
+                className="absolute top-[calc(100%+6px)] right-0 z-500 bg-card border border-border
                              rounded-xl p-1 min-w-[200px] shadow-lg shadow-black/10"
               >
                 <div className="px-3 py-2 border-b border-border/50 mb-1">
