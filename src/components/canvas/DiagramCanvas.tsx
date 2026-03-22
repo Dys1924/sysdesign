@@ -12,13 +12,20 @@ import {
 } from '../../store/canvas.store'
 import { CATEGORY_STYLE, type NodeTemplate } from '../../types/diagram'
 import type { DiagramNode, DiagramEdge } from '../../types/diagram'
+import { cn } from "../../lib/utils";
 import DiagramNodeComponent from './DiagramNode'
 import DiagramEdgeComponent from './DiagramEdge'
+import { IconMouse, IconClick, IconKeyboard, IconX, IconInfoCircle } from '@tabler/icons-react'
 
 const nodeTypes: NodeTypes = { diagram: DiagramNodeComponent }
 const edgeTypes: EdgeTypes = { smoothstep: DiagramEdgeComponent }
 let nodeCounter = Date.now()
 
+/**
+ * The main diagramming canvas powered by React Flow.
+ * Handles node/edge initialization, drag-and-drop from sidebar, keyboard shortcuts,
+ * and integration with the canvas store for persistence and history.
+ */
 export default function DiagramCanvas() {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
@@ -30,6 +37,22 @@ export default function DiagramCanvas() {
   const wrapRef = useRef<HTMLDivElement>(null)
   const { fitView } = useReactFlow()
   const [showDelete, setShowDelete] = useState(false)
+  const [showHint, setShowHint] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hide-canvas-hint') !== 'true'
+    }
+    return true
+  })
+
+  const toggleHint = () => {
+    const newState = !showHint
+    setShowHint(newState)
+    if (newState === false) {
+      localStorage.setItem('hide-canvas-hint', 'true')
+    } else {
+      localStorage.removeItem('hide-canvas-hint')
+    }
+  }
 
   const selectedCount = nodes.filter(n => n.selected).length + edges.filter(e => e.selected).length
 
@@ -134,9 +157,10 @@ export default function DiagramCanvas() {
         fitViewOptions={{ padding: 0.25 }}
         deleteKeyCode={null}
         proOptions={{ hideAttribution: true }}
-        selectionOnDrag
-        panOnDrag={[1, 2]}
+        panOnDrag={[1, 2, 3]}
         selectionMode={SelectionMode.Partial}
+        panOnScroll={true}
+        selectionOnDrag={false}
         snapToGrid={snapToGrid}
         snapGrid={[20, 20]}
       >
@@ -185,6 +209,84 @@ export default function DiagramCanvas() {
           </div>
         </div>
       )}
+      {/* Navigation Tips Toggle & Hint */}
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col items-end gap-3 pointer-events-none">
+        {showHint && (
+          <div className="animate-in slide-in-from-right-4 fade-in duration-300 pointer-events-auto">
+            <div className="relative bg-card/80 backdrop-blur-md border border-border/50 rounded-2xl p-5 shadow-2xl w-[260px] overflow-hidden">
+              <button 
+                onClick={toggleHint}
+                className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-all cursor-pointer"
+              >
+                <IconX size={14} />
+              </button>
+              
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-2 bg-primary/10 rounded-xl">
+                  <IconMouse size={18} className="text-primary" />
+                </div>
+                <h4 className="text-[13px] font-bold tracking-tight">Navigation Tips</h4>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-1.5 bg-muted/50 rounded-lg shrink-0">
+                    <IconClick size={14} className="text-muted-foreground" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-bold">Pan Canvas</div>
+                    <div className="text-[10px] text-muted-foreground leading-relaxed">Left-click & drag or use Right-click anywhere.</div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="p-1.5 bg-muted/50 rounded-lg shrink-0">
+                    <IconKeyboard size={14} className="text-muted-foreground" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-bold">Shortcuts</div>
+                    <div className="text-[10px] text-muted-foreground leading-relaxed">
+                      <kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[9px] font-mono">F</kbd> Fit view, <kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[9px] font-mono">G</kbd> Group.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="p-1.5 bg-muted/50 rounded-lg shrink-0">
+                    <IconMouse size={14} className="text-muted-foreground rotate-180" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-bold">Zooming</div>
+                    <div className="text-[10px] text-muted-foreground leading-relaxed">Use your mouse wheel to zoom in & out of the design.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 pt-4 border-t border-border/40">
+                <button 
+                  onClick={toggleHint}
+                  className="w-full py-1.5 text-[10px] font-bold bg-muted/50 hover:bg-primary hover:text-white rounded-lg transition-all cursor-pointer"
+                >
+                  Hide for now
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={toggleHint}
+          className={cn(
+            "p-3 rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 pointer-events-auto cursor-pointer",
+            showHint 
+              ? "bg-primary text-white border-primary translate-x-12 opacity-0" 
+              : "bg-card/80 text-muted-foreground hover:text-foreground border-border/50 hover:border-primary/50 hover:shadow-primary/10"
+          )}
+          title="Show Navigation Tips"
+        >
+          <IconInfoCircle size={22} />
+        </button>
+      </div>
     </div>
   )
 }

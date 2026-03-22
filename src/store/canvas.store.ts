@@ -14,17 +14,31 @@ function getStorageKey() {
 
 const MAX_HISTORY = 40
 
+/**
+ * Represents a snapshot of the canvas state for history tracking.
+ */
 export interface Snapshot {
+  /** The collection of nodes in this snapshot */
   nodes: DiagramNode[]
+  /** The collection of edges in this snapshot */
   edges: DiagramEdge[]
 }
 
+/**
+ * The root state for the diagram canvas.
+ */
 export interface CanvasState {
+  /** Current nodes on the canvas */
   nodes: DiagramNode[]
+  /** Current edges on the canvas */
   edges: DiagramEdge[]
+  /** Counter used to generate unique edge IDs */
   edgeCounter: number
+  /** History of snapshots for undo/redo functionality */
   history: Snapshot[]
+  /** Current index in the history stack */
   historyIndex: number
+  /** Whether nodes should snap to the grid when moved */
   snapToGrid: boolean
 }
 
@@ -94,6 +108,10 @@ async function save(s: CanvasState) {
   } catch {}
 }
 
+/**
+ * The primary store for managing diagram canvas state.
+ * Handles nodes, edges, history, and persistence to both Supabase and LocalStorage.
+ */
 export const canvasStore = new Store<CanvasState>(DEFAULT_CANVAS_STATE)
 
 // Load initial data
@@ -130,6 +148,9 @@ projectStore.subscribe(() => {
 })
 
 
+/**
+ * Toggles the grid snapping feature on the canvas and persists the change.
+ */
 export function toggleSnap() {
   canvasStore.setState((s) => {
     const next = { ...s, snapToGrid: !s.snapToGrid }
@@ -148,6 +169,10 @@ function pushHistory(s: CanvasState): CanvasState {
   return { ...s, history: next, historyIndex: next.length - 1 }
 }
 
+/**
+ * Applies a set of node changes (position, selection, etc.) to the store.
+ * @param changes - Array of changes to apply to nodes
+ */
 export function applyNodeChangesToStore(changes: NodeChange[]) {
   canvasStore.setState((s) => {
     const nodes = applyNodeChanges(changes, s.nodes) as DiagramNode[]
@@ -157,6 +182,10 @@ export function applyNodeChangesToStore(changes: NodeChange[]) {
   })
 }
 
+/**
+ * Applies a set of edge changes (selection, deletion, etc.) to the store.
+ * @param changes - Array of changes to apply to edges
+ */
 export function applyEdgeChangesToStore(changes: EdgeChange[]) {
   canvasStore.setState((s) => {
     const edges = applyEdgeChanges(changes, s.edges)
@@ -166,6 +195,10 @@ export function applyEdgeChangesToStore(changes: EdgeChange[]) {
   })
 }
 
+/**
+ * Creates a new connection between two nodes on the canvas.
+ * @param connection - The connection details (source, target, handles)
+ */
 export function connectNodes(connection: Connection) {
   canvasStore.setState((s) => {
     const edge: DiagramEdge = {
@@ -184,6 +217,11 @@ export function connectNodes(connection: Connection) {
   })
 }
 
+/**
+ * Updates an existing edge with a new connection path.
+ * @param oldEdge - The edge being updated
+ * @param newConnection - The new connection details
+ */
 export function updateEdgeConnection(oldEdge: DiagramEdge, newConnection: Connection) {
   canvasStore.setState((s) => {
     const edges = s.edges.map(e => {
@@ -204,6 +242,10 @@ export function updateEdgeConnection(oldEdge: DiagramEdge, newConnection: Connec
   })
 }
 
+/**
+ * Adds a new node to the diagram.
+ * @param node - The node object to add
+ */
 export function addNode(node: DiagramNode) {
   canvasStore.setState((s) => {
     const next = pushHistory({ ...s, nodes: [...s.nodes, node] })
@@ -212,6 +254,11 @@ export function addNode(node: DiagramNode) {
   })
 }
 
+/**
+ * Updates the text label displayed on a specific node.
+ * @param id - The unique ID of the node
+ * @param label - The new label text
+ */
 export function updateNodeLabel(id: string, label: string) {
   canvasStore.setState((s) => {
     const nodes = s.nodes.map((n) => n.id === id ? { ...n, data: { ...n.data, label } } : n)
@@ -221,6 +268,11 @@ export function updateNodeLabel(id: string, label: string) {
   })
 }
 
+/**
+ * Updates metadata (notes, owner, etc.) for a specific node.
+ * @param id - The unique ID of the node
+ * @param meta - Partial node data object containing updates
+ */
 export function updateNodeMeta(id: string, meta: Partial<DiagramNode['data']>) {
   canvasStore.setState((s) => {
     const nodes = s.nodes.map((n) => n.id === id ? { ...n, data: { ...n.data, ...meta } } : n)
@@ -230,6 +282,11 @@ export function updateNodeMeta(id: string, meta: Partial<DiagramNode['data']>) {
   })
 }
 
+/**
+ * Updates metadata for a specific edge.
+ * @param id - The unique ID of the edge
+ * @param meta - Metadata containing the new label and animation state
+ */
 export function updateEdgeMeta(id: string, meta: { label: string; animated?: boolean }) {
   canvasStore.setState((s) => {
     const edges = s.edges.map((e) => e.id === id ? { ...e, data: { ...e.data, ...meta }, label: meta.label } : e)
@@ -239,6 +296,9 @@ export function updateEdgeMeta(id: string, meta: { label: string; animated?: boo
   })
 }
 
+/**
+ * Deletes all currently selected nodes and edges from the canvas.
+ */
 export function deleteSelected() {
   canvasStore.setState((s) => {
     const nodes = s.nodes.filter((n) => !n.selected)
@@ -250,6 +310,9 @@ export function deleteSelected() {
   })
 }
 
+/**
+ * Reverts the canvas to the previous state in the history stack.
+ */
 export function undo() {
   canvasStore.setState((s) => {
     if (s.historyIndex <= 0) return s
@@ -261,6 +324,9 @@ export function undo() {
   })
 }
 
+/**
+ * Restores the canvas to the next state in the history stack.
+ */
 export function redo() {
   canvasStore.setState((s) => {
     if (s.historyIndex >= s.history.length - 1) return s
@@ -272,6 +338,9 @@ export function redo() {
   })
 }
 
+/**
+ * Clears all nodes and edges from the canvas and resets history.
+ */
 export function clearCanvas() {
   canvasStore.setState((s) => {
     const next: CanvasState = {
@@ -284,6 +353,28 @@ export function clearCanvas() {
   })
 }
 
+/**
+ * Clears the current canvas and loads a pre-defined architecture template.
+ * @param template - The template object containing nodes and edges
+ */
+export function loadTemplate(template: { nodes: any[], edges: any[] }) {
+  canvasStore.setState((s) => {
+    const next: CanvasState = {
+      ...s,
+      nodes: template.nodes,
+      edges: template.edges,
+      edgeCounter: template.edges.length,
+      history: [{ nodes: template.nodes, edges: template.edges }],
+      historyIndex: 0,
+    }
+    save(next)
+    return next
+  })
+}
+
+/**
+ * Groups selected nodes into a new container node.
+ */
 export function groupSelected() {
   canvasStore.setState((s) => {
     const selected = s.nodes.filter(n => n.selected && !n.parentId);
@@ -326,6 +417,12 @@ export function groupSelected() {
   })
 }
 
+/**
+ * Custom hook to consume the canvas store in a React component.
+ * Ensures hydration safety by returning default state initially and syncing on mount.
+ * @param selector - Function to select specific data from the store
+ * @returns The selected portion of the state
+ */
 export function useCanvasStore<T>(selector: (state: CanvasState) => T): T {
   // Always start with default state for hydration matching
   const [value, setValue] = useState<T>(() => selector(DEFAULT_CANVAS_STATE));

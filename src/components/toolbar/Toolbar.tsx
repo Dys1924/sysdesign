@@ -1,42 +1,49 @@
-import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { useReactFlow } from "@xyflow/react";
+import { useEffect, useRef, useState } from "react";
 
 import {
-  IconLayoutGrid,
-  IconTrash,
-  IconDownload,
-  IconChevronDown,
   IconArrowBackUp,
   IconArrowForwardUp,
-  IconSquarePlus,
-  IconGridDots,
+  IconBook,
+  IconChevronDown,
+  IconDownload,
+  IconFocus2,
   IconFolder,
-  IconUserCircle,
-  IconLogout,
+  IconGridDots,
   IconLoader2,
+  IconLogout,
+  IconSquarePlus,
+  IconTrash,
+  IconUserCircle,
+  IconZoomIn,
+  IconZoomOut,
 } from "@tabler/icons-react";
+import { TEMPLATES, type Template } from "../../data/templates";
 import {
   clearCanvas,
-  undo,
-  redo,
   groupSelected,
+  loadTemplate,
+  redo,
   toggleSnap,
+  undo,
   useCanvasStore,
 } from "../../store/canvas.store";
 import {
-  useProjectStore,
-  setActiveProject,
   login,
   logout,
+  setActiveProject,
+  useProjectStore,
 } from "../../store/project.store";
 import {
+  exportMermaid,
   exportPng,
   exportSvgFile,
-  exportMermaid,
   exportTerraform,
 } from "../export/exportUtils";
 import { ThemeToggle } from "../ThemeToggle";
 import { Button } from "../ui/button";
+import ConfirmModal from "../ui/ConfirmModal";
 import { Logo } from "../ui/logo";
 
 const EXPORT_OPTIONS = [
@@ -65,18 +72,24 @@ export default function Toolbar() {
 
   const location = useLocation();
   const navigate = useNavigate();
-
-  const isCanvasRoute =
-    location.pathname === "/" ||
-    (location.pathname.split("/").length === 2 &&
-      location.pathname !== "/projects");
+  const { zoomIn, zoomOut, fitView } = useReactFlow();
 
   const [exportOpen, setExportOpen] = useState(false);
   const [projectMenuOpen, setProjectMenuOpen] = useState(false);
+  const [templateMenuOpen, setTemplateMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [templateConfirm, setTemplateConfirm] = useState<Template | null>(null);
   const [exporting, setExporting] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const templateMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const isCanvasRoute =
+    location.pathname === "/" ||
+    (!["/projects", "/templates", "/privacy", "/terms"].includes(
+      location.pathname,
+    ) &&
+      !location.pathname.includes("."));
 
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < historyLen - 1;
@@ -101,6 +114,13 @@ export default function Toolbar() {
       }
 
       if (
+        templateMenuRef.current &&
+        !templateMenuRef.current.contains(e.target as Node)
+      ) {
+        setTemplateMenuOpen(false);
+      }
+
+      if (
         userMenuRef.current &&
         !userMenuRef.current.contains(e.target as Node)
       ) {
@@ -110,6 +130,12 @@ export default function Toolbar() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  const handleLoadTemplate = (tpl: Template) => {
+    loadTemplate(tpl);
+    setTemplateConfirm(null);
+    setTemplateMenuOpen(false);
+  };
 
   const handleExport = async (key: string) => {
     setExporting(key);
@@ -126,6 +152,14 @@ export default function Toolbar() {
 
   return (
     <header className="h-12 flex items-center justify-between px-4 border-b bg-card shrink-0 relative z-500">
+      <ConfirmModal
+        open={!!templateConfirm}
+        title="Load Architecture Template?"
+        description={`This will clear your current canvas and load the "${templateConfirm?.name}" design. This action cannot be undone.`}
+        confirmText="Load Template"
+        onClose={() => setTemplateConfirm(null)}
+        onConfirm={() => handleLoadTemplate(templateConfirm!)}
+      />
       {/* Left — brand + stats */}
       <div className="flex items-center gap-3">
         <Link to="/" className="flex items-center gap-2 relative">
@@ -143,6 +177,14 @@ export default function Toolbar() {
         >
           <IconFolder size={14} stroke={1.8} />
           Projects
+        </Link>
+
+        <Link
+          to="/templates"
+          className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all select-none"
+        >
+          <IconBook size={14} stroke={1.8} className="text-primary" />
+          Templates
         </Link>
 
         {/* Project Selector Dropdown */}
@@ -268,6 +310,34 @@ export default function Toolbar() {
 
           <div className="w-px h-5 bg-border mx-1" />
 
+          {/* Zoom Controls */}
+          <Button
+            onClick={() => zoomIn()}
+            title="Zoom In"
+            variant="outline"
+            size="icon-sm"
+          >
+            <IconZoomIn size={15} stroke={1.8} />
+          </Button>
+          <Button
+            onClick={() => zoomOut()}
+            title="Zoom Out"
+            variant="outline"
+            size="icon-sm"
+          >
+            <IconZoomOut size={15} stroke={1.8} />
+          </Button>
+          <Button
+            onClick={() => fitView({ duration: 400 })}
+            title="Fit to View"
+            variant="outline"
+            size="icon-sm"
+          >
+            <IconFocus2 size={15} stroke={1.8} />
+          </Button>
+
+          <div className="w-px h-5 bg-border mx-1" />
+
           {/* Snap */}
           <Button
             onClick={toggleSnap}
@@ -301,6 +371,8 @@ export default function Toolbar() {
             <IconTrash size={13} stroke={1.8} />
             Clear
           </Button>
+
+          <div className="w-px h-5 bg-border mx-1" />
 
           {/* Export */}
           <div ref={menuRef} className="relative">

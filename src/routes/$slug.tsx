@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ReactFlowProvider } from "@xyflow/react";
 import { useState, useEffect } from "react";
 import Sidebar from "../components/sidebar/Sidebar";
 import DiagramCanvas from "../components/canvas/DiagramCanvas";
@@ -11,10 +10,17 @@ import {
 import ProjectSetupPopup from "../components/dashboard/ProjectSetupPopup";
 import Container from "#/components/ui/container";
 
+/**
+ * Dynamic route for individual project canvases, identified by their slug.
+ */
 export const Route = createFileRoute("/$slug")({
   component: SlugPage,
 });
 
+/**
+ * The main editor page for a specific project.
+ * Synchronizes the active project state with the URL slug and renders the canvas.
+ */
 function SlugPage() {
   const { slug } = Route.useParams();
   const projects = useProjectStore((s) => s.projects);
@@ -65,9 +71,7 @@ function SlugPage() {
   return (
     <>
       <main className="flex-1 relative overflow-hidden z-10">
-        <ReactFlowProvider>
-          <DiagramCanvas />
-        </ReactFlowProvider>
+        <DiagramCanvas />
       </main>
 
       <div className="absolute inset-y-4 left-4 z-200 pointer-events-none">

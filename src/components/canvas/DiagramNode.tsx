@@ -23,6 +23,11 @@ type TablerIconComponent = React.FC<{
   color?: string;
 }>;
 
+/**
+ * Dynamically resolves a Tabler Icon component by its string name.
+ * @param name - The name of the icon (e.g., 'IconBox')
+ * @returns The React component for the icon, or a default IconBox if not found.
+ */
 function getIcon(name: string): TablerIconComponent {
   const icons = TablerIcons as Record<string, unknown>;
   return (icons[name] as TablerIconComponent) ?? TablerIcons.IconBox;
@@ -39,6 +44,10 @@ const STATUS_CONFIG: Record<
   deprecated: { label: "Deprecated", className: "bg-red-500 text-white" },
 };
 
+/**
+ * Custom node component for the diagram representing system components.
+ * Supports categorization (styling/icons), editing labels, notes, owners, and status badges.
+ */
 function DiagramNode({ id, data, selected }: NodeProps) {
   const meta = data as NodeMeta;
   const style = CATEGORY_STYLE[meta.category];

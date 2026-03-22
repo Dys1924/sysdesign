@@ -7,12 +7,22 @@ import {
 } from "@tabler/icons-react";
 import { useProjectStore, MAX_PROJECTS } from "../../store/project.store";
 
+/**
+ * Props for the ProjectSetupPopup component.
+ */
 interface ProjectSetupPopupProps {
+  /** Whether the modal is currently visible */
   open: boolean;
+  /** Callback function to close the modal */
   onClose: () => void;
+  /** Callback function called when a new project is submitted */
   onCreate: (name: string, description?: string) => void;
 }
 
+/**
+ * A modal popup used to initialize a new project with a name and description.
+ * Enforces project limits and provides loading states during creation.
+ */
 export default function ProjectSetupPopup({
   open,
   onClose,

@@ -1,4 +1,6 @@
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
+import { ReactFlowProvider } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +10,10 @@ import Toolbar from "../components/toolbar/Toolbar";
 import Footer from "../components/layout/Footer";
 import MobileBlock from "../components/layout/MobileBlock";
 
+/**
+ * The root route configuration for the entire application.
+ * Defines the base HTML structure, meta tags, and global layout providers.
+ */
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -61,6 +67,10 @@ export const Route = createRootRoute({
   shellComponent: RootDocument,
 });
 
+/**
+ * The base document structure for the application.
+ * Wraps all routes with necessary providers (theme, tooltips) and core layout (Toolbar, Footer).
+ */
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -71,13 +81,15 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <ThemeProvider>
           <TooltipProvider delay={300}>
             <MobileBlock />
-            <div className="flex flex-col h-screen overflow-hidden bg-background">
-              <Toolbar />
-              <div className="flex-1 flex overflow-hidden relative">
-                {children}
+            <ReactFlowProvider>
+              <div className="flex flex-col h-screen overflow-hidden bg-background">
+                <Toolbar />
+                <div className="flex-1 flex overflow-y-auto relative">
+                  {children}
+                </div>
+                <Footer />
               </div>
-              <Footer />
-            </div>
+            </ReactFlowProvider>
           </TooltipProvider>
         </ThemeProvider>
         <Scripts />

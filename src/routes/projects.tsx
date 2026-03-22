@@ -22,10 +22,17 @@ import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import Container from "#/components/ui/container";
 
+/**
+ * Route for the project management dashboard.
+ */
 export const Route = createFileRoute("/projects")({
   component: ProjectsPage,
 });
 
+/**
+ * Dashboard component that lists all user projects.
+ * Supports searching, grid/list view toggling, and project deletion.
+ */
 function ProjectsPage() {
   const navigate = useNavigate();
   const projects = useProjectStore((s) => s.projects);

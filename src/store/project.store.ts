@@ -4,26 +4,47 @@ import { v4 as uuidv4 } from 'uuid'
 import { supabase } from '../lib/supabase'
 import type { User, Session } from '@supabase/supabase-js'
 
+/**
+ * Represents a user-created diagram project.
+ */
 export interface Project {
+  /** Unique project identifier */
   id: string
+  /** URL-friendly name for routing */
   slug: string
+  /** Human-readable project name */
   name: string
+  /** Optional detailed description */
   description?: string
+  /** Unix timestamp of creation */
   createdAt: number
+  /** Unix timestamp of last update */
   updatedAt: number
 }
 
+/**
+ * Root state for managing projects and authentication.
+ */
 export interface ProjectState {
+  /** List of all available projects */
   projects: Project[]
+  /** ID of the currently active project */
   activeProjectId: string | null
+  /** Currently authenticated Supabase user */
   user: User | null
+  /** Current Supabase session */
   session: Session | null
+  /** Whether the store is initially loading data */
   loading: boolean
+  /** Whether a migration from local to cloud is in progress */
   migrating: boolean
 }
 
 const STORAGE_KEY = 'sysdesign-projects-v1'
 
+/**
+ * Maximum number of allowed projects for non-authenticated users.
+ */
 export const MAX_PROJECTS = 5
 
 const DEFAULT_PROJECT_STATE: ProjectState = {
@@ -52,6 +73,10 @@ function save(s: ProjectState) {
 
 const saved = load()
 
+/**
+ * The primary store for project management, authentication, and persistence.
+ * Syncs with LocalStorage for guest users and Supabase for authenticated users.
+ */
 export const projectStore = new Store<ProjectState>({
   ...DEFAULT_PROJECT_STATE,
   ...saved,
@@ -67,6 +92,12 @@ function slugify(text: string): string {
     .replace(/--+/g, '-')     // Replace multiple - with single -
 }
 
+/**
+ * Creates a new project and persists it to the appropriate storage (Local or Supabase).
+ * @param name - The name of the new project
+ * @param description - Optional description for the project
+ * @returns The newly created project object, or null if the project limit is reached
+ */
 export function createProject(name: string, description?: string) {
   if (projectStore.state.projects.length >= MAX_PROJECTS) {
     return null
@@ -111,6 +142,10 @@ export function createProject(name: string, description?: string) {
   return newProject
 }
 
+/**
+ * Sets the currently active project for display on the canvas.
+ * @param id - The unique ID of the project to activate, or null to clear selection
+ */
 export function setActiveProject(id: string | null) {
   projectStore.setState((s: ProjectState) => {
     const next = { ...s, activeProjectId: id }
@@ -119,6 +154,9 @@ export function setActiveProject(id: string | null) {
   })
 }
 
+/**
+ * Initiates the Google OAuth login process via Supabase.
+ */
 export async function login() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -129,6 +167,9 @@ export async function login() {
   if (error) console.error('Error logging in:', error.message)
 }
 
+/**
+ * Signs out the current user and reverts the store to the locally saved projects.
+ */
 export async function logout() {
   const { error } = await supabase.auth.signOut()
   if (error) console.error('Error logging out:', error.message)
@@ -286,6 +327,10 @@ if (typeof window !== 'undefined') {
   })
 }
 
+/**
+ * Deletes a project from storage (Local or Supabase) and clears it from the store.
+ * @param id - The unique ID of the project to delete
+ */
 export function deleteProject(id: string) {
   projectStore.setState((s) => {
     const next = {
@@ -307,6 +352,11 @@ export function deleteProject(id: string) {
   })
 }
 
+/**
+ * Updates an existing project's details (name, slug, description).
+ * @param id - The unique ID of the project to update
+ * @param updates - Object containing the fields to update
+ */
 export function updateProject(id: string, updates: Partial<Omit<Project, 'id' | 'createdAt'>>) {
   projectStore.setState((s: ProjectState) => {
     const projects = s.projects.map((p) => 
@@ -334,6 +384,12 @@ export function updateProject(id: string, updates: Partial<Omit<Project, 'id' | 
   })
 }
 
+/**
+ * Custom hook to consume the project store in a React component.
+ * Ensures hydration safety by returning default state initially and syncing on mount.
+ * @param selector - Function to select specific data from the store
+ * @returns The selected portion of the state
+ */
 export function useProjectStore<T>(selector: (state: ProjectState) => T): T {
   // Use server-safe initial state for hydration
   const [state, setState] = useState<T>(() => selector(DEFAULT_PROJECT_STATE))

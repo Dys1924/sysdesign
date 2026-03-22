@@ -27,13 +27,19 @@ const CATEGORY_ORDER: NodeCategory[] = [
   "devops",
 ];
 
+/**
+ * Represents a draggable item in the sidebar representing a system component.
+ */
 function NodeItem({
   template,
   isCustom = false,
   disabled = false,
 }: {
+  /** The node template data */
   template: NodeTemplate;
+  /** Whether the node is a custom-created one */
   isCustom?: boolean;
+  /** Whether dragging is disabled (e.g., if no project is active) */
   disabled?: boolean;
 }) {
   const style = CATEGORY_STYLE[template.category];
@@ -75,6 +81,10 @@ function NodeItem({
   );
 }
 
+/**
+ * Left sidebar containing the searchable registry of diagram components.
+ * Organized by category with support for custom node creation.
+ */
 export default function Sidebar() {
   const activeProjectId = useProjectStore((s) => s.activeProjectId);
   const [query, setQuery] = React.useState("");

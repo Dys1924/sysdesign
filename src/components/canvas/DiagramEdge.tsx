@@ -8,6 +8,10 @@ import {
 import { updateEdgeMeta } from "../../store/canvas.store";
 import { Input } from "../ui/input";
 
+/**
+ * Custom edge component for the diagram.
+ * Renders a bezier path with an editable label in the center.
+ */
 export default function DiagramEdge({
   id,
   sourceX,

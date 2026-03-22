@@ -1,6 +1,9 @@
 import { toPng, toSvg } from 'html-to-image'
 import type { DiagramNode, DiagramEdge } from '../../types/diagram'
 
+/**
+ * Exports the current diagram container as a high-resolution PNG image.
+ */
 export async function exportPng(): Promise<void> {
   try {
     const el = document.getElementById('sys-diagram')
@@ -21,6 +24,9 @@ export async function exportPng(): Promise<void> {
   }
 }
 
+/**
+ * Exports the current diagram container as an SVG file.
+ */
 export async function exportSvgFile(): Promise<void> {
   try {
     const el = document.getElementById('sys-diagram')
@@ -38,6 +44,11 @@ export async function exportSvgFile(): Promise<void> {
 
 
 
+/**
+ * Generates and downloads a Mermaid.js flowchart representation of the diagram.
+ * @param nodes - Current collection of diagram nodes
+ * @param edges - Current collection of diagram edges
+ */
 export function exportMermaid(nodes: DiagramNode[], edges: DiagramEdge[]): void {
   const lines = ['flowchart TD']
   nodes.forEach((n) => {
@@ -51,6 +62,12 @@ export function exportMermaid(nodes: DiagramNode[], edges: DiagramEdge[]): void 
   blob(lines.join('\n'), 'diagram.mmd')
 }
 
+/**
+ * Generates a basic Terraform configuration (HCL) boilerplate based on the diagram nodes.
+ * Maps recognized subtypes (e.g., 'lambda', 's3') to AWS resource blocks.
+ * @param nodes - Current collection of diagram nodes
+ * @param edges - Current collection of diagram edges (used for commentary only)
+ */
 export function exportTerraform(nodes: DiagramNode[], edges: DiagramEdge[]): void {
   type Gen = (n: DiagramNode) => string
   const map: Record<string, Gen> = {
