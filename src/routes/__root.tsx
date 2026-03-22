@@ -1,4 +1,6 @@
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
+import { IconHome, IconLinkOff } from "@tabler/icons-react";
+import { Button } from "@/components/ui/button";
 import { ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
@@ -65,6 +67,7 @@ export const Route = createRootRoute({
     ],
   }),
   shellComponent: RootDocument,
+  notFoundComponent: NotFound,
 });
 
 /**
@@ -95,5 +98,47 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Scripts />
       </body>
     </html>
+  );
+}
+/**
+ * Professional Not Found (404) view.
+ * Styled to match the SysDesign professional aesthetic.
+ */
+function NotFound() {
+  return (
+    <main className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in-95 duration-500">
+      <div className="relative mb-8">
+        <div className="size-24 rounded-3xl bg-primary/10 flex items-center justify-center text-primary rotate-12 animate-bounce duration-2000">
+          <IconLinkOff size={48} stroke={1.5} />
+        </div>
+        <div className="absolute -bottom-2 -right-2 size-10 rounded-2xl bg-background border border-border flex items-center justify-center shadow-lg">
+          <span className="text-sm font-black tracking-tighter">404</span>
+        </div>
+      </div>
+
+      <h1 className="text-4xl font-black tracking-tight mb-3 bg-linear-to-b from-foreground to-foreground/60 bg-clip-text text-transparent">
+        Lost in the Cloud?
+      </h1>
+      <p className="max-w-md mx-auto text-muted-foreground mb-10 leading-relaxed font-medium">
+        The route you're looking for doesn't exist in our architecture registry. 
+        It might have been renamed or moved to a different region.
+      </p>
+
+      <div className="flex flex-col sm:flex-row items-center gap-3">
+        <Button href="/" variant="default" size="lg" className="rounded-2xl gap-2 h-12 px-8 min-w-[160px]">
+          <IconHome size={18} />
+          Go to Editor
+        </Button>
+        <Button href="/projects" variant="secondary" size="lg" className="rounded-2xl h-12 px-8 border-border/40">
+          My Projects
+        </Button>
+      </div>
+      
+      <div className="mt-16 pt-8 border-t border-border/20 w-full max-w-xs opacity-40">
+        <div className="text-[10px] font-bold tracking-widest uppercase">
+          SysDesign Internal Error Registry
+        </div>
+      </div>
+    </main>
   );
 }

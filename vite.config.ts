@@ -11,9 +11,9 @@ const config = defineConfig({
     tsconfigPaths({ projects: ["./tsconfig.json"] }),
     tanstackStart({
       router: {
-        routesDirectory: "src",
+        routesDirectory: "routes",
       },
-      srcDirectory: ".",
+      srcDirectory: "src",
     }),
     viteReact(),
     tailwindcss(),
