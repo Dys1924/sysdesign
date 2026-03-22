@@ -1,4 +1,4 @@
-import { IconDeviceLaptop, IconDeviceDesktop } from '@tabler/icons-react'
+import { IconDeviceLaptop, IconDeviceDesktop } from "@tabler/icons-react";
 
 export default function MobileBlock() {
   return (
@@ -15,13 +15,17 @@ export default function MobileBlock() {
       <h1 className="text-2xl font-bold text-foreground mb-3 tracking-tight">
         Desktop Required
       </h1>
-      
+
       <p className="text-muted-foreground text-[15px] max-w-[280px] leading-relaxed mb-10">
-        SysDesign is built for complex diagramming. 
-        Please access the project using a <strong>desktop</strong> or <strong>laptop</strong> for the best experience.
+        SysDesign is built for complex diagramming. Please access the project
+        using a <strong>desktop</strong> or <strong>laptop</strong> browser for
+        the best experience.
       </p>
 
-      <div className="flex flex-col gap-4 items-center">
+      {/* <div className="flex flex-col gap-4 items-center">
+        <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground/60">
+          Supported Systems
+        </p>
         <div className="flex -space-x-3">
           <div className="w-10 h-10 rounded-full border-2 border-background bg-muted flex items-center justify-center">
             <span className="text-xs font-semibold">Mac</span>
@@ -33,16 +37,13 @@ export default function MobileBlock() {
             Lnx
           </div>
         </div>
-        <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground/60">
-          Supported Systems
-        </p>
-      </div>
+      </div> */}
 
       <div className="mt-auto pb-10">
         <div className="text-[12px] font-medium text-primary/80 flex items-center gap-2">
-          <span>sysdesign.xyz</span>
+          <span>https://sysdesign.obare27.com/</span>
         </div>
       </div>
     </div>
-  )
+  );
 }
