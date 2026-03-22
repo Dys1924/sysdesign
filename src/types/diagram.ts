@@ -1,6 +1,7 @@
 import type { Node, Edge } from '@xyflow/react'
 
-export type NodeCategory = 'microservice' | 'cloud' | 'database' | 'frontend'
+export type NodeCategory = 'microservice' | 'cloud' | 'database' | 'frontend' | 'networking' | 'security' | 'observability' | 'ai' | 'devops'
+
 
 export interface NodeMeta extends Record<string, unknown> {
   label: string
@@ -49,7 +50,13 @@ export const NODE_TEMPLATES: Record<NodeCategory, NodeTemplate[]> = {
     { subtype: 'component', label: 'Component', category: 'frontend', icon: 'IconLayoutGrid', description: 'UI component' },
     { subtype: 'bff',       label: 'BFF',       category: 'frontend', icon: 'IconPlugConnected', description: 'Backend for frontend' },
   ],
+  networking: [],
+  security: [],
+  observability: [],
+  ai: [],
+  devops: [],
 }
+
 
 export interface CategoryStyle {
   label: string
@@ -61,8 +68,14 @@ export interface CategoryStyle {
 }
 
 export const CATEGORY_STYLE: Record<NodeCategory, CategoryStyle> = {
-  microservice: { label: 'Microservices', color: '#185FA5', bg: '#EBF3FC', border: '#B5D4F4', text: '#0C447C', pill: '#DAEAF9' },
-  cloud:        { label: 'Cloud Infra',   color: '#3B6D11', bg: '#EDF5E2', border: '#C0DD97', text: '#27500A', pill: '#DFF0C5' },
-  database:     { label: 'Databases',     color: '#854F0B', bg: '#FDF0DC', border: '#FAC775', text: '#633806', pill: '#FAE4B0' },
-  frontend:     { label: 'Frontend',      color: '#993556', bg: '#FCE9F1', border: '#F4C0D1', text: '#72243E', pill: '#F8D4E3' },
+  microservice:  { label: 'Microservices', color: '#185FA5', bg: '#EBF3FC', border: '#B5D4F4', text: '#0C447C', pill: '#DAEAF9' },
+  cloud:         { label: 'Cloud Infra',   color: '#3B6D11', bg: '#EDF5E2', border: '#C0DD97', text: '#27500A', pill: '#DFF0C5' },
+  database:      { label: 'Databases',     color: '#854F0B', bg: '#FDF0DC', border: '#FAC775', text: '#633806', pill: '#FAE4B0' },
+  frontend:      { label: 'Frontend',      color: '#993556', bg: '#FCE9F1', border: '#F4C0D1', text: '#72243E', pill: '#F8D4E3' },
+  networking:    { label: 'Networking',    color: '#0D9488', bg: '#F0FDFA', border: '#99F6E4', text: '#115E59', pill: '#CCFBF1' },
+  security:      { label: 'Security',      color: '#E11D48', bg: '#FFF1F2', border: '#FECDD3', text: '#9F1239', pill: '#FFE4E6' },
+  observability: { label: 'Observability', color: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE', text: '#5B21B6', pill: '#EDE9FE' },
+  ai:            { label: 'AI / ML',       color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', text: '#1E40AF', pill: '#DBEAFE' },
+  devops:        { label: 'DevOps',        color: '#4B5563', bg: '#F3F4F6', border: '#E5E7EB', text: '#1F2937', pill: '#F3F4F6' },
 }
+

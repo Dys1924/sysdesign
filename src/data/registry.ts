@@ -212,5 +212,42 @@ export const REGISTRY: NodeTemplate[] = [
   { subtype: 'ms-logging', label: 'Logging Aggregator', category: 'microservice', icon: 'IconListTree', description: 'ELK, Splunk, Loki logging' },
   { subtype: 'ms-circuit-breaker', label: 'Circuit Breaker', category: 'microservice', icon: 'IconSwitch3', description: 'Fault Tolerance Pattern' },
   { subtype: 'ms-discovery', label: 'Service Discovery', category: 'microservice', icon: 'IconCompass', description: 'Consul, Eureka Service Registry' },
-  { subtype: 'ms-config', label: 'Config Server', category: 'microservice', icon: 'IconAdjustments', description: 'Centralized Configuration' }
+  { subtype: 'ms-config', label: 'Config Server', category: 'microservice', icon: 'IconAdjustments', description: 'Centralized Configuration' },
+  
+  // Security & Identity
+  { subtype: 'sec-oauth', label: 'OAuth / OIDC Provider', category: 'security', icon: 'IconFingerprint', description: 'Identity Federation' },
+  { subtype: 'sec-api-key', label: 'API Key Manager', category: 'security', icon: 'IconKey', description: 'Key Issuance & Validation' },
+  { subtype: 'sec-waf', label: 'WAF', category: 'security', icon: 'IconShieldLock', description: 'Web Application Firewall' },
+  { subtype: 'sec-vault', label: 'Secret Manager', category: 'security', icon: 'IconKeypass', description: 'Vault / Secrets Management' },
+  { subtype: 'sec-idp', label: 'Identity Provider', category: 'security', icon: 'IconUsersGroup', description: 'Auth0, Okta, Cognito' },
+  { subtype: 'sec-ssl', label: 'SSL/TLS Termination', category: 'security', icon: 'IconLock', description: 'Secure Tunnel Termination' },
+
+  // Networking
+  { subtype: 'net-lb', label: 'Load Balancer', category: 'networking', icon: 'IconArrowsSplit2', description: 'L4/L7 Traffic Distribution' },
+  { subtype: 'net-dns', label: 'DNS', category: 'networking', icon: 'IconNetwork', description: 'Route 53, Cloudflare DNS' },
+  { subtype: 'net-vpn', label: 'VPN', category: 'networking', icon: 'IconShieldNetwork', description: 'Secure Site-to-Site Tunnel' },
+  { subtype: 'net-firewall', label: 'Firewall', category: 'networking', icon: 'IconWall', description: 'Network Access Control' },
+  { subtype: 'net-proxy', label: 'Reverse Proxy', category: 'networking', icon: 'IconReplace', description: 'Nginx, HAProxy, Envoy' },
+  { subtype: 'net-ingress', label: 'Ingress Controller', category: 'networking', icon: 'IconDoorEnter', description: 'K8s Ingress Management' },
+
+  // Observability
+  { subtype: 'obs-logs', label: 'Logging', category: 'observability', icon: 'IconFileText', description: 'ELK, Datadog, Splunk' },
+  { subtype: 'obs-metrics', label: 'Metrics', category: 'observability', icon: 'IconChartHistogram', description: 'Prometheus, Grafana' },
+  { subtype: 'obs-tracing', label: 'Tracing', category: 'observability', icon: 'IconRoute', description: 'Tempo, Jaeger, Honeycomb' },
+  { subtype: 'obs-alert', label: 'Alerting', category: 'observability', icon: 'IconBellRinging', description: 'PagerDuty, OpsGenie' },
+
+  // AI & Machine Learning
+  { subtype: 'ai-serving', label: 'Model Serving', category: 'ai', icon: 'IconBrain', description: 'TF Serving, TorchServe' },
+  { subtype: 'ai-vector-db', label: 'Vector Database', category: 'ai', icon: 'IconDatabaseStar', description: 'Pinecone, Milvus, Weaviate' },
+  { subtype: 'ai-pipeline', label: 'Embedding Pipeline', category: 'ai', icon: 'IconBinaryTree', description: 'Data Vectorization Flow' },
+  { subtype: 'ai-inference', label: 'Inference API', category: 'ai', icon: 'IconApi', description: 'LLM / Inference Gateway' },
+  { subtype: 'ai-features', label: 'Feature Store', category: 'ai', icon: 'IconTableOptions', description: 'ML Feature Management' },
+
+  // DevOps & Platform
+  { subtype: 'dev-pipeline', label: 'CI/CD Pipeline', category: 'devops', icon: 'IconGitBranch', description: 'GitHub Actions, Jenkins' },
+  { subtype: 'dev-registry', label: 'Container Registry', category: 'devops', icon: 'IconBox', description: 'ECR, GCR, Docker Hub' },
+  { subtype: 'dev-artifacts', label: 'Artifact Store', category: 'devops', icon: 'IconPackage', description: 'Nexus, Artifactory' },
+  { subtype: 'dev-k8s', label: 'Kubernetes Cluster', category: 'devops', icon: 'IconBoxMultiple', description: 'Container Orchestration' },
+  { subtype: 'dev-helm', label: 'Helm Chart', category: 'devops', icon: 'IconAnchor', description: 'Package Management for K8s' }
 ]
+
