@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import {
   IconBrandGithub,
   IconBrandLinkedin,
@@ -11,8 +12,13 @@ export default function Footer() {
 
   return (
     <footer className="h-10 border-t bg-card/50 backdrop-blur-sm px-4 flex items-center justify-between shrink-0 z-50">
-      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium select-none">
+      <div className="flex items-center gap-2 text-[10.5px] text-muted-foreground font-medium select-none">
         <span>&copy; {currentYear} Sysdesign.</span>
+        <span className="opacity-40">|</span>
+        <div className="flex items-center gap-3">
+          <Link to="/privacy" className="hover:text-primary transition-colors hover:underline decoration-primary/30">Privacy</Link>
+          <Link to="/terms" className="hover:text-primary transition-colors hover:underline decoration-primary/30">Terms</Link>
+        </div>
         <span className="opacity-40">|</span>
         <span className="flex items-center gap-1">
           Made with <IconHeartFilled size={10} className="text-destructive animate-pulse" /> by{" "}
@@ -26,6 +32,7 @@ export default function Footer() {
           </a>
         </span>
       </div>
+
 
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-3">
