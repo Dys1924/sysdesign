@@ -1,25 +1,25 @@
-import { Store } from '@tanstack/store'
-import { useState, useEffect } from 'react'
-import { v4 as uuidv4 } from 'uuid'
-import { supabase } from '../lib/supabase'
-import type { User, Session } from '@supabase/supabase-js'
+import { Store } from "@tanstack/store";
+import { useState, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { supabase } from "../lib/supabase";
+import type { User, Session } from "@supabase/supabase-js";
 
 /**
  * Represents a user-created diagram project.
  */
 export interface Project {
   /** Unique project identifier */
-  id: string
+  id: string;
   /** URL-friendly name for routing */
-  slug: string
+  slug: string;
   /** Human-readable project name */
-  name: string
+  name: string;
   /** Optional detailed description */
-  description?: string
+  description?: string;
   /** Unix timestamp of creation */
-  createdAt: number
+  createdAt: number;
   /** Unix timestamp of last update */
-  updatedAt: number
+  updatedAt: number;
 }
 
 /**
@@ -27,25 +27,25 @@ export interface Project {
  */
 export interface ProjectState {
   /** List of all available projects */
-  projects: Project[]
+  projects: Project[];
   /** ID of the currently active project */
-  activeProjectId: string | null
+  activeProjectId: string | null;
   /** Currently authenticated Supabase user */
-  user: User | null
+  user: User | null;
   /** Current Supabase session */
-  session: Session | null
+  session: Session | null;
   /** Whether the store is initially loading data */
-  loading: boolean
+  loading: boolean;
   /** Whether a migration from local to cloud is in progress */
-  migrating: boolean
+  migrating: boolean;
 }
 
-const STORAGE_KEY = 'sysdesign-projects-v1'
+const STORAGE_KEY = "sysdesign-projects-v1";
 
 /**
  * Maximum number of allowed projects for non-authenticated users.
  */
-export const MAX_PROJECTS = 5
+export const MAX_PROJECTS = 5;
 
 const DEFAULT_PROJECT_STATE: ProjectState = {
   projects: [],
@@ -54,24 +54,26 @@ const DEFAULT_PROJECT_STATE: ProjectState = {
   session: null,
   loading: true,
   migrating: false,
-}
+};
 
 function load(): Partial<ProjectState> {
   try {
-    if (typeof window === 'undefined') return {}
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : {}
-  } catch { return {} }
+    if (typeof window === "undefined") return {};
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
 }
 
 function save(s: ProjectState) {
   try {
-    if (typeof window === 'undefined') return
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(s))
+    if (typeof window === "undefined") return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
   } catch {}
 }
 
-const saved = load()
+const saved = load();
 
 /**
  * The primary store for project management, authentication, and persistence.
@@ -80,16 +82,16 @@ const saved = load()
 export const projectStore = new Store<ProjectState>({
   ...DEFAULT_PROJECT_STATE,
   ...saved,
-})
+});
 
 function slugify(text: string): string {
   return text
     .toString()
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '-')     // Replace spaces with -
-    .replace(/[^\w-]+/g, '')  // Remove all non-word chars
-    .replace(/--+/g, '-')     // Replace multiple - with single -
+    .replace(/\s+/g, "-") // Replace spaces with -
+    .replace(/[^\w-]+/g, "") // Remove all non-word chars
+    .replace(/--+/g, "-"); // Replace multiple - with single -
 }
 
 /**
@@ -100,7 +102,7 @@ function slugify(text: string): string {
  */
 export function createProject(name: string, description?: string) {
   if (projectStore.state.projects.length >= MAX_PROJECTS) {
-    return null
+    return null;
   }
 
   const newProject: Project = {
@@ -110,36 +112,39 @@ export function createProject(name: string, description?: string) {
     description,
     createdAt: Date.now(),
     updatedAt: Date.now(),
-  }
+  };
 
   projectStore.setState((s: ProjectState) => {
     const next = {
       ...s,
       projects: [newProject, ...s.projects],
       activeProjectId: newProject.id,
-    }
-    
+    };
+
     if (!s.user) {
-      save(next)
+      save(next);
     } else {
       // Supabase insert
-      supabase.from('projects').insert({
-        id: newProject.id,
-        user_id: s.user.id,
-        name: newProject.name,
-        slug: newProject.slug,
-        description: newProject.description,
-        created_at: new Date(newProject.createdAt).toISOString(),
-        updated_at: new Date(newProject.updatedAt).toISOString()
-      }).then(({ error }) => {
-        if (error) console.error('Supabase create error:', error.message)
-      })
+      supabase
+        .from("projects")
+        .insert({
+          id: newProject.id,
+          user_id: s.user.id,
+          name: newProject.name,
+          slug: newProject.slug,
+          description: newProject.description,
+          created_at: new Date(newProject.createdAt).toISOString(),
+          updated_at: new Date(newProject.updatedAt).toISOString(),
+        })
+        .then(({ error }) => {
+          if (error) console.error("Supabase create error:", error.message);
+        });
     }
-    
-    return next
-  })
-  
-  return newProject
+
+    return next;
+  });
+
+  return newProject;
 }
 
 /**
@@ -148,10 +153,10 @@ export function createProject(name: string, description?: string) {
  */
 export function setActiveProject(id: string | null) {
   projectStore.setState((s: ProjectState) => {
-    const next = { ...s, activeProjectId: id }
-    if (!s.user) save(next)
-    return next
-  })
+    const next = { ...s, activeProjectId: id };
+    if (!s.user) save(next);
+    return next;
+  });
 }
 
 /**
@@ -159,46 +164,48 @@ export function setActiveProject(id: string | null) {
  */
 export async function login() {
   const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
+    provider: "google",
     options: {
-      redirectTo: window.location.origin
-    }
-  })
-  if (error) console.error('Error logging in:', error.message)
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+  if (error) console.error("Error logging in:", error.message);
 }
 
 /**
  * Signs out the current user and reverts the store to the locally saved projects.
  */
 export async function logout() {
-  const { error } = await supabase.auth.signOut()
-  if (error) console.error('Error logging out:', error.message)
-  
+  const { error } = await supabase.auth.signOut();
+  if (error) console.error("Error logging out:", error.message);
+
   // Reset state to local projects
-  const saved = load()
+  const saved = load();
   projectStore.setState((s) => ({
     ...s,
     ...saved,
     user: null,
     session: null,
-    loading: false
-  }))
+    loading: false,
+  }));
 }
 
 // Migrate local projects to Supabase
 async function migrateLocalToSupabase(user: User, localProjects: Project[]) {
-  if (localProjects.length === 0) return
+  if (localProjects.length === 0) return;
 
   for (const p of localProjects) {
     // Load canvas data for this local project
-    let canvasData = { nodes: [], edges: [], edgeCounter: 0 }
+    let canvasData = { nodes: [], edges: [], edgeCounter: 0 };
     try {
       // Check specific project storage first, then legacy fallback
-      const raw = localStorage.getItem(`sysdesign-diagram-${p.id}`) || localStorage.getItem('sysdesign-v2')
-      if (raw) canvasData = JSON.parse(raw)
+      const raw =
+        localStorage.getItem(`sysdesign-diagram-${p.id}`) ||
+        localStorage.getItem("sysdesign-v2");
+      if (raw) canvasData = JSON.parse(raw);
     } catch (e) {}
 
-    const { error } = await supabase.from('projects').insert({
+    const { error } = await supabase.from("projects").insert({
       id: p.id,
       user_id: user.id,
       name: p.name,
@@ -208,69 +215,71 @@ async function migrateLocalToSupabase(user: User, localProjects: Project[]) {
       edges: canvasData.edges,
       edge_counter: canvasData.edgeCounter,
       created_at: new Date(p.createdAt).toISOString(),
-      updated_at: new Date(Date.now()).toISOString()
-    })
+      updated_at: new Date(Date.now()).toISOString(),
+    });
 
     if (error) {
-      if (error.code === '23505') {
-        console.log(`Project ${p.name} already exists in cloud, skipping insert.`)
+      if (error.code === "23505") {
+        console.log(
+          `Project ${p.name} already exists in cloud, skipping insert.`,
+        );
       } else {
-        console.error('Migration error for project:', p.name, error.message)
+        console.error("Migration error for project:", p.name, error.message);
         // If error is project limit, we might want to stop migrating others
-        if (error.message.includes('limit')) break
+        if (error.message.includes("limit")) break;
       }
     }
-    
+
     // Always clear the specific project diagram from local storage to avoid double-migration
-    localStorage.removeItem(`sysdesign-diagram-${p.id}`)
+    localStorage.removeItem(`sysdesign-diagram-${p.id}`);
   }
 
   // Clear the main local project list and active project index completely
-  localStorage.removeItem(STORAGE_KEY)
-  localStorage.removeItem('active_project_id')
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem("active_project_id");
   // For legacy support
-  localStorage.removeItem('sysdesign-v2')
+  localStorage.removeItem("sysdesign-v2");
 }
 
 // Sync projects from Supabase
 async function syncFromSupabase() {
-  projectStore.setState((s: ProjectState) => ({ ...s, loading: true }))
-  const user = projectStore.state.user
+  projectStore.setState((s: ProjectState) => ({ ...s, loading: true }));
+  const user = projectStore.state.user;
   const { data: projects, error } = await supabase
-    .from('projects')
-    .select('id, slug, name, description, created_at, updated_at')
-    .order('updated_at', { ascending: false })
+    .from("projects")
+    .select("id, slug, name, description, created_at, updated_at")
+    .order("updated_at", { ascending: false });
 
   if (error) {
-    console.error('Error fetching Supabase projects:', error.message)
-    return
+    console.error("Error fetching Supabase projects:", error.message);
+    return;
   }
 
-  const projectList = (projects || []).map(p => ({
+  const projectList = (projects || []).map((p) => ({
     id: p.id,
     slug: p.slug,
     name: p.name,
     description: p.description,
     createdAt: new Date(p.created_at).getTime(),
     updatedAt: new Date(p.updated_at).getTime(),
-  }))
+  }));
 
   // Trigger migration if we have local projects
-  const local = load()
+  const local = load();
   if (local.projects && local.projects.length > 0 && user) {
-    projectStore.setState((s: ProjectState) => ({ ...s, migrating: true }))
-    await migrateLocalToSupabase(user, local.projects)
-    
+    projectStore.setState((s: ProjectState) => ({ ...s, migrating: true }));
+    await migrateLocalToSupabase(user, local.projects);
+
     // Refresh the list after migration
     const { data: refreshed } = await supabase
-      .from('projects')
-      .select('id, slug, name, description, created_at, updated_at')
-      .order('updated_at', { ascending: false })
-    
+      .from("projects")
+      .select("id, slug, name, description, created_at, updated_at")
+      .order("updated_at", { ascending: false });
+
     if (refreshed) {
       projectStore.setState((s: ProjectState) => ({
         ...s,
-        projects: refreshed.map(p => ({
+        projects: refreshed.map((p) => ({
           id: p.id,
           slug: p.slug,
           name: p.name,
@@ -279,9 +288,9 @@ async function syncFromSupabase() {
           updatedAt: new Date(p.updated_at).getTime(),
         })),
         loading: false,
-        migrating: false
-      }))
-      return
+        migrating: false,
+      }));
+      return;
     }
   }
 
@@ -289,26 +298,26 @@ async function syncFromSupabase() {
     ...s,
     projects: projectList,
     loading: false,
-    migrating: false
-  }))
+    migrating: false,
+  }));
 }
 
 // Initial session check
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   supabase.auth.getSession().then(({ data: { session } }) => {
-    projectStore.setState(s => ({
+    projectStore.setState((s) => ({
       ...s,
       session,
       user: session?.user ?? null,
-      loading: !session // if no session, we're not loading anymore
-    }))
-    
+      loading: !session, // if no session, we're not loading anymore
+    }));
+
     if (session) {
-      syncFromSupabase()
+      syncFromSupabase();
     } else {
-      projectStore.setState((s: ProjectState) => ({ ...s, loading: false }))
+      projectStore.setState((s: ProjectState) => ({ ...s, loading: false }));
     }
-  })
+  });
 
   supabase.auth.onAuthStateChange((_event, session) => {
     projectStore.setState((s: ProjectState) => ({
@@ -316,15 +325,19 @@ if (typeof window !== 'undefined') {
       session,
       user: session?.user ?? null,
       loading: !!session, // Stay in loading state if we're about to sync
-      activeProjectId: null
-    }))
+      activeProjectId: null,
+    }));
     if (session) {
-      syncFromSupabase()
+      syncFromSupabase();
     } else {
-      const local = load()
-      projectStore.setState((s: ProjectState) => ({ ...s, ...local, loading: false }))
+      const local = load();
+      projectStore.setState((s: ProjectState) => ({
+        ...s,
+        ...local,
+        loading: false,
+      }));
     }
-  })
+  });
 }
 
 /**
@@ -337,19 +350,23 @@ export function deleteProject(id: string) {
       ...s,
       projects: s.projects.filter((p) => p.id !== id),
       activeProjectId: s.activeProjectId === id ? null : s.activeProjectId,
-    }
-    
+    };
+
     if (!s.user) {
-      save(next)
+      save(next);
     } else {
       // Supabase handle delete
-      supabase.from('projects').delete().eq('id', id).then(({ error }) => {
-        if (error) console.error('Supabase delete error:', error)
-      })
+      supabase
+        .from("projects")
+        .delete()
+        .eq("id", id)
+        .then(({ error }) => {
+          if (error) console.error("Supabase delete error:", error);
+        });
     }
-    
-    return next
-  })
+
+    return next;
+  });
 }
 
 /**
@@ -357,31 +374,38 @@ export function deleteProject(id: string) {
  * @param id - The unique ID of the project to update
  * @param updates - Object containing the fields to update
  */
-export function updateProject(id: string, updates: Partial<Omit<Project, 'id' | 'createdAt'>>) {
+export function updateProject(
+  id: string,
+  updates: Partial<Omit<Project, "id" | "createdAt">>,
+) {
   projectStore.setState((s: ProjectState) => {
-    const projects = s.projects.map((p) => 
-      p.id === id ? { ...p, ...updates, updatedAt: Date.now() } : p
-    )
-    const next = { ...s, projects }
-    
+    const projects = s.projects.map((p) =>
+      p.id === id ? { ...p, ...updates, updatedAt: Date.now() } : p,
+    );
+    const next = { ...s, projects };
+
     if (!s.user) {
-      save(next)
+      save(next);
     } else {
-      const updated = projects.find(p => p.id === id)
+      const updated = projects.find((p) => p.id === id);
       if (updated) {
-        supabase.from('projects').update({
-          name: updated.name,
-          slug: updated.slug,
-          description: updated.description,
-          updated_at: new Date(updated.updatedAt).toISOString()
-        }).eq('id', id).then(({ error }) => {
-          if (error) console.error('Supabase update error:', error.message)
-        })
+        supabase
+          .from("projects")
+          .update({
+            name: updated.name,
+            slug: updated.slug,
+            description: updated.description,
+            updated_at: new Date(updated.updatedAt).toISOString(),
+          })
+          .eq("id", id)
+          .then(({ error }) => {
+            if (error) console.error("Supabase update error:", error.message);
+          });
       }
     }
-    
-    return next
-  })
+
+    return next;
+  });
 }
 
 /**
@@ -392,16 +416,16 @@ export function updateProject(id: string, updates: Partial<Omit<Project, 'id' | 
  */
 export function useProjectStore<T>(selector: (state: ProjectState) => T): T {
   // Use server-safe initial state for hydration
-  const [state, setState] = useState<T>(() => selector(DEFAULT_PROJECT_STATE))
+  const [state, setState] = useState<T>(() => selector(DEFAULT_PROJECT_STATE));
 
   useEffect(() => {
     // Client-side initialization
-    setState(selector(projectStore.state))
+    setState(selector(projectStore.state));
     const sub = projectStore.subscribe(() => {
-      setState(selector(projectStore.state))
-    })
-    return () => sub.unsubscribe()
-  }, [selector])
+      setState(selector(projectStore.state));
+    });
+    return () => sub.unsubscribe();
+  }, [selector]);
 
-  return state
+  return state;
 }

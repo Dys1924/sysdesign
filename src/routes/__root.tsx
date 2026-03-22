@@ -21,7 +21,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "SysDesign — Pro System Designer" },
+      { title: "SysDesign — Professional Systems Architecture Tool" },
       {
         name: "description",
         content:
@@ -42,7 +42,11 @@ export const Route = createRootRoute({
           "Visualize your entire backend, cloud, and microservice architectures with ease. Professional-grade diagramming for high-scale teams.",
       },
       { name: "og:type", content: "website" },
-      { name: "og:image", content: "/logo512.png" },
+      {
+        name: "og:image",
+        content:
+          "https://pprstys1m6xjtdrw.public.blob.vercel-storage.com/og-image.png",
+      },
       { name: "twitter:card", content: "summary_large_image" },
       {
         name: "twitter:title",
@@ -120,20 +124,30 @@ function NotFound() {
         Lost in the Cloud?
       </h1>
       <p className="max-w-md mx-auto text-muted-foreground mb-10 leading-relaxed font-medium">
-        The route you're looking for doesn't exist in our architecture registry. 
+        The route you're looking for doesn't exist in our architecture registry.
         It might have been renamed or moved to a different region.
       </p>
 
       <div className="flex flex-col sm:flex-row items-center gap-3">
-        <Button href="/" variant="default" size="lg" className="rounded-2xl gap-2 h-12 px-8 min-w-[160px]">
+        <Button
+          href="/"
+          variant="default"
+          size="lg"
+          className="rounded-2xl gap-2 h-12 px-8 min-w-[160px]"
+        >
           <IconHome size={18} />
           Go to Editor
         </Button>
-        <Button href="/projects" variant="secondary" size="lg" className="rounded-2xl h-12 px-8 border-border/40">
+        <Button
+          href="/projects"
+          variant="secondary"
+          size="lg"
+          className="rounded-2xl h-12 px-8 border-border/40"
+        >
           My Projects
         </Button>
       </div>
-      
+
       <div className="mt-16 pt-8 border-t border-border/20 w-full max-w-xs opacity-40">
         <div className="text-[10px] font-bold tracking-widest uppercase">
           SysDesign Internal Error Registry
