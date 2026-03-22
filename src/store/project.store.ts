@@ -18,6 +18,8 @@ export interface ProjectState {
 
 const STORAGE_KEY = 'sysdesign-projects-v1'
 
+export const MAX_PROJECTS = 10
+
 const DEFAULT_PROJECT_STATE: ProjectState = {
   projects: [],
   activeProjectId: null,
@@ -56,6 +58,10 @@ function slugify(text: string): string {
 }
 
 export function createProject(name: string, description?: string) {
+  if (projectStore.state.projects.length >= MAX_PROJECTS) {
+    return null
+  }
+
   const newProject: Project = {
     id: uuidv4(),
     slug: slugify(name),

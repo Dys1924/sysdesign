@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { IconFolderPlus, IconX, IconLoader2 } from '@tabler/icons-react'
+import { IconFolderPlus, IconX, IconLoader2, IconInfoCircle } from '@tabler/icons-react'
+import { useProjectStore, MAX_PROJECTS } from '../../store/project.store'
 
 interface ProjectSetupPopupProps {
   open: boolean
@@ -11,12 +12,14 @@ export default function ProjectSetupPopup({ open, onClose, onCreate }: ProjectSe
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
+  const projects = useProjectStore((s) => s.projects)
+  const isLimitReached = projects.length >= MAX_PROJECTS
 
   if (!open) return null
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim()) return
+    if (!name.trim() || isLimitReached) return
     
     setLoading(true)
     setTimeout(() => {
@@ -77,17 +80,28 @@ export default function ProjectSetupPopup({ open, onClose, onCreate }: ProjectSe
             />
           </div>
 
+          <div className="bg-muted/30 border border-border/50 rounded-lg p-3 flex gap-2.5 items-start">
+            <IconInfoCircle size={14} className="text-primary shrink-0 mt-0.5" />
+            <p className="text-[10.5px] leading-normal text-muted-foreground">
+              To keep the service fast and free for everyone, we limit each user to <span className="font-bold text-foreground">{MAX_PROJECTS} projects</span>.
+            </p>
+          </div>
+
           <div className="flex items-center justify-end gap-2 mt-1">
             <button
               type="submit"
-              disabled={!name.trim() || loading}
-              className="w-full inline-flex items-center justify-center gap-2 h-9 px-4 text-xs font-semibold text-white bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors shadow-sm"
+              disabled={!name.trim() || loading || isLimitReached}
+              className={`w-full inline-flex items-center justify-center gap-2 h-9 px-4 text-xs font-semibold text-white rounded-lg transition-colors shadow-sm ${
+                isLimitReached ? 'bg-muted text-muted-foreground pointer-events-none' : 'bg-primary hover:bg-primary/90'
+              }`}
             >
               {loading ? (
                 <>
                   <IconLoader2 size={14} className="animate-spin" />
                   Initialising...
                 </>
+              ) : isLimitReached ? (
+                'Project Limit Reached'
               ) : (
                 'Create Project'
               )}
@@ -98,4 +112,5 @@ export default function ProjectSetupPopup({ open, onClose, onCreate }: ProjectSe
     </div>
   )
 }
+
 
