@@ -2,18 +2,41 @@ import { toPng, toSvg } from 'html-to-image'
 import type { DiagramNode, DiagramEdge } from '../../types/diagram'
 
 export async function exportPng(): Promise<void> {
-  const el = document.querySelector('.react-flow__viewport') as HTMLElement | null
-  if (!el) return
-  const url = await toPng(el, { backgroundColor: '#ffffff', pixelRatio: 2 })
-  trigger(url, 'diagram.png')
+  try {
+    const el = document.getElementById('sys-diagram')
+    if (!el) {
+      console.error('Export target not found')
+      return
+    }
+    const url = await toPng(el, { 
+      backgroundColor: '#ffffff', 
+      pixelRatio: 2,
+      cacheBust: true,
+      skipFonts: true,
+    })
+
+    trigger(url, 'diagram.png')
+  } catch (err) {
+    console.error('PNG Export failed:', err)
+  }
 }
 
 export async function exportSvgFile(): Promise<void> {
-  const el = document.querySelector('.react-flow__viewport') as HTMLElement | null
-  if (!el) return
-  const url = await toSvg(el, { backgroundColor: '#ffffff' })
-  trigger(url, 'diagram.svg')
+  try {
+    const el = document.getElementById('sys-diagram')
+    if (!el) return
+    const url = await toSvg(el, { 
+      backgroundColor: '#ffffff',
+      skipFonts: true,
+    })
+
+    trigger(url, 'diagram.svg')
+  } catch (err) {
+    console.error('SVG Export failed:', err)
+  }
 }
+
+
 
 export function exportMermaid(nodes: DiagramNode[], edges: DiagramEdge[]): void {
   const lines = ['flowchart TD']
@@ -71,10 +94,14 @@ function tfBlock(resource: string, n: DiagramNode, body: string) {
 
 function trigger(url: string, filename: string) {
   const a = document.createElement('a')
+  a.style.display = 'none'
   a.href = url
   a.download = filename
+  document.body.appendChild(a)
   a.click()
+  document.body.removeChild(a)
 }
+
 
 function blob(content: string, filename: string) {
   const url = URL.createObjectURL(new Blob([content], { type: 'text/plain' }))

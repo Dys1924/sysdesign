@@ -115,9 +115,11 @@ export default function DiagramCanvas() {
   }, [])
 
   return (
-    <div ref={wrapRef} style={{ width: '100%', height: '100%' }}>
+    <div ref={wrapRef} style={{ width: "100%", height: "100%" }}>
       <ReactFlow
+        id="sys-diagram"
         nodes={nodes}
+
         edges={edges}
         colorMode={isDark ? 'dark' : 'light'}
         onNodesChange={onNodesChange}
