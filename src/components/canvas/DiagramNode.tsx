@@ -158,13 +158,13 @@ function DiagramNode({ id, data, selected }: NodeProps) {
       <div className="flex items-center justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-1.5 min-w-0">
           <div
-            className="w-[26px] h-[26px] rounded-md flex items-center justify-center shrink-0"
+            className="size-6 rounded-md flex items-center justify-center shrink-0"
             style={{ background: style.pill, color: style.color }}
           >
-            <Icon size={14} stroke={1.8} />
+            <Icon size={10} stroke={1.8} />
           </div>
           <h6
-            className="text-[9px] font-semibold tracking-widest uppercase truncate"
+            className="text-[9px] font-medium tracking-widest truncate"
             style={{ color: style.text }}
           >
             {style.label}
@@ -243,12 +243,10 @@ function DiagramNode({ id, data, selected }: NodeProps) {
       ) : (
         /* Read view */
         <div onDoubleClick={openEdit} className="cursor-text">
-          <h6 className="text-[10px] font-semibold leading-snug">
-            {meta.label as string}
-          </h6>
+          <h6 className="text-[8px] font-semibold">{meta.label as string}</h6>
 
           {meta.description && (
-            <div className="text-[10.5px] text-muted-foreground mt-0.5 leading-snug">
+            <div className="text-[7px] text-muted-foreground mt-0.5">
               {meta.description as string}
             </div>
           )}

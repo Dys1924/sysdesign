@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import appCss from "../globals.css?url";
+import Toolbar from "../components/toolbar/Toolbar";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -33,8 +34,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="relative">
         <ThemeProvider>
           <TooltipProvider delay={300}>
-           
-            {children} 
+            <div className="flex flex-col h-screen overflow-hidden bg-background">
+              <Toolbar />
+              <div className="flex-1 flex overflow-hidden relative">
+                {children}
+              </div>
+            </div>
           </TooltipProvider>
         </ThemeProvider>
         <Scripts />

@@ -1,34 +1,43 @@
-import { useState } from 'react'
-import { IconFolderPlus, IconX, IconLoader2, IconInfoCircle } from '@tabler/icons-react'
-import { useProjectStore, MAX_PROJECTS } from '../../store/project.store'
+import { useState } from "react";
+import {
+  IconFolderPlus,
+  IconX,
+  IconLoader2,
+  IconInfoCircle,
+} from "@tabler/icons-react";
+import { useProjectStore, MAX_PROJECTS } from "../../store/project.store";
 
 interface ProjectSetupPopupProps {
-  open: boolean
-  onClose: () => void
-  onCreate: (name: string, description?: string) => void
+  open: boolean;
+  onClose: () => void;
+  onCreate: (name: string, description?: string) => void;
 }
 
-export default function ProjectSetupPopup({ open, onClose, onCreate }: ProjectSetupPopupProps) {
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [loading, setLoading] = useState(false)
-  const projects = useProjectStore((s) => s.projects)
-  const isLimitReached = projects.length >= MAX_PROJECTS
+export default function ProjectSetupPopup({
+  open,
+  onClose,
+  onCreate,
+}: ProjectSetupPopupProps) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+  const projects = useProjectStore((s) => s.projects);
+  const isLimitReached = projects.length >= MAX_PROJECTS;
 
-  if (!open) return null
+  if (!open) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim() || isLimitReached) return
-    
-    setLoading(true)
+    e.preventDefault();
+    if (!name.trim() || isLimitReached) return;
+
+    setLoading(true);
     setTimeout(() => {
-      onCreate(name, description)
-      setName('')
-      setDescription('')
-      setLoading(false)
-    }, 400)
-  }
+      onCreate(name, description);
+      setName("");
+      setDescription("");
+      setLoading(false);
+    }, 400);
+  };
 
   return (
     <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-sm px-4">
@@ -39,11 +48,15 @@ export default function ProjectSetupPopup({ open, onClose, onCreate }: ProjectSe
               <IconFolderPlus size={18} stroke={1.8} />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-foreground tracking-tight">Project Setup</h2>
-              <p className="text-[11px] text-muted-foreground">Start by naming your architecture</p>
+              <h2 className="text-sm font-bold text-foreground tracking-tight">
+                Project Setup
+              </h2>
+              <p className="text-[11px] text-muted-foreground">
+                Start by naming your architecture
+              </p>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-1.5 hover:bg-muted rounded-md transition-colors text-muted-foreground"
           >
@@ -53,7 +66,10 @@ export default function ProjectSetupPopup({ open, onClose, onCreate }: ProjectSe
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="name" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-0.5">
+            <label
+              htmlFor="name"
+              className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-0.5"
+            >
               Name
             </label>
             <input
@@ -67,7 +83,10 @@ export default function ProjectSetupPopup({ open, onClose, onCreate }: ProjectSe
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="desc" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-0.5">
+            <label
+              htmlFor="desc"
+              className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-0.5"
+            >
               Description
             </label>
             <textarea
@@ -80,19 +99,14 @@ export default function ProjectSetupPopup({ open, onClose, onCreate }: ProjectSe
             />
           </div>
 
-          <div className="bg-muted/30 border border-border/50 rounded-lg p-3 flex gap-2.5 items-start">
-            <IconInfoCircle size={14} className="text-primary shrink-0 mt-0.5" />
-            <p className="text-[10.5px] leading-normal text-muted-foreground">
-              To keep the service fast and free for everyone, we limit each user to <span className="font-bold text-foreground">{MAX_PROJECTS} projects</span>.
-            </p>
-          </div>
-
           <div className="flex items-center justify-end gap-2 mt-1">
             <button
               type="submit"
               disabled={!name.trim() || loading || isLimitReached}
               className={`w-full inline-flex items-center justify-center gap-2 h-9 px-4 text-xs font-semibold text-white rounded-lg transition-colors shadow-sm ${
-                isLimitReached ? 'bg-muted text-muted-foreground pointer-events-none' : 'bg-primary hover:bg-primary/90'
+                isLimitReached
+                  ? "bg-muted text-muted-foreground pointer-events-none"
+                  : "bg-primary hover:bg-primary/90"
               }`}
             >
               {loading ? (
@@ -101,16 +115,14 @@ export default function ProjectSetupPopup({ open, onClose, onCreate }: ProjectSe
                   Initialising...
                 </>
               ) : isLimitReached ? (
-                'Project Limit Reached'
+                "Project Limit Reached"
               ) : (
-                'Create Project'
+                "Create Project"
               )}
             </button>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }
-
-

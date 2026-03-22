@@ -4,6 +4,7 @@ import { applyNodeChanges, applyEdgeChanges, MarkerType } from '@xyflow/react'
 import type { NodeChange, EdgeChange, Connection } from '@xyflow/react'
 import type { DiagramNode, DiagramEdge } from '../types/diagram'
 import { projectStore } from './project.store'
+import { supabase } from '../lib/supabase'
 
 let activeProjectId = projectStore.state.activeProjectId
 
@@ -36,17 +37,56 @@ const DEFAULT_CANVAS_STATE: CanvasState = {
   snapToGrid: false,
 }
 
-function load(): Partial<CanvasState> {
+async function load(): Promise<Partial<CanvasState>> {
+  if (typeof window === 'undefined') return {}
+  
+  const user = projectStore.state.user
+  if (user && activeProjectId) {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('nodes, edges, edge_counter')
+      .eq('id', activeProjectId)
+      .single()
+    
+    if (error) {
+      console.error('Supabase load error:', error.message)
+      return {}
+    }
+    
+    return {
+      nodes: data.nodes as DiagramNode[],
+      edges: data.edges as DiagramEdge[],
+      edgeCounter: data.edge_counter as number,
+    }
+  }
+
   try {
-    if (typeof window === 'undefined') return {}
     const raw = localStorage.getItem(getStorageKey())
     return raw ? JSON.parse(raw) : {}
   } catch { return {} }
 }
 
-function save(s: CanvasState) {
+async function save(s: CanvasState) {
+  if (typeof window === 'undefined') return
+  
+  const user = projectStore.state.user
+  if (user && activeProjectId) {
+    // Autosave to Supabase
+    const { error } = await supabase
+      .from('projects')
+      .update({
+        nodes: s.nodes,
+        edges: s.edges,
+        edge_counter: s.edgeCounter,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', activeProjectId)
+    
+    if (error) console.error('Supabase save error:', error.message)
+    return
+  }
+
   try {
-    if (typeof window === 'undefined') return
     localStorage.setItem(getStorageKey(), JSON.stringify({
       nodes: s.nodes, edges: s.edges, edgeCounter: s.edgeCounter,
       snapToGrid: s.snapToGrid,
@@ -54,32 +94,38 @@ function save(s: CanvasState) {
   } catch {}
 }
 
-const saved = load()
+export const canvasStore = new Store<CanvasState>(DEFAULT_CANVAS_STATE)
 
-export const canvasStore = new Store<CanvasState>({
-  ...DEFAULT_CANVAS_STATE,
-  nodes: saved.nodes ?? [],
-  edges: saved.edges ?? [],
-  edgeCounter: saved.edgeCounter ?? 0,
-  history: [{ nodes: saved.nodes ?? [], edges: saved.edges ?? [] }],
-  snapToGrid: saved.snapToGrid ?? false,
-})
+// Load initial data
+if (typeof window !== 'undefined') {
+  load().then(saved => {
+    canvasStore.setState((s) => ({
+      ...s,
+      nodes: saved.nodes ?? [],
+      edges: saved.edges ?? [],
+      edgeCounter: saved.edgeCounter ?? 0,
+      history: [{ nodes: saved.nodes ?? [], edges: saved.edges ?? [] }],
+      snapToGrid: saved.snapToGrid ?? false,
+    }))
+  })
+}
 
 // Subscribe to project changes to reload relevant data
 projectStore.subscribe(() => {
   const newActiveId = projectStore.state.activeProjectId
   if (newActiveId !== activeProjectId) {
     activeProjectId = newActiveId
-    const newSaved = load()
-    canvasStore.setState((s) => ({
-      ...s,
-      nodes: newSaved.nodes ?? [],
-      edges: newSaved.edges ?? [],
-      edgeCounter: newSaved.edgeCounter ?? 0,
-      history: [{ nodes: newSaved.nodes ?? [], edges: newSaved.edges ?? [] }],
-      historyIndex: 0,
-      snapToGrid: newSaved.snapToGrid ?? false,
-    }))
+    load().then(newSaved => {
+      canvasStore.setState((s) => ({
+        ...s,
+        nodes: newSaved.nodes ?? [],
+        edges: newSaved.edges ?? [],
+        edgeCounter: newSaved.edgeCounter ?? 0,
+        history: [{ nodes: newSaved.nodes ?? [], edges: newSaved.edges ?? [] }],
+        historyIndex: 0,
+        snapToGrid: newSaved.snapToGrid ?? false,
+      }))
+    })
   }
 })
 

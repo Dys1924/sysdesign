@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ReactFlowProvider } from '@xyflow/react'
 import { useState, useEffect } from 'react'
-import Toolbar from '../components/toolbar/Toolbar'
 import Sidebar from '../components/sidebar/Sidebar'
 import DiagramCanvas from '../components/canvas/DiagramCanvas'
 import { createProject, useProjectStore, setActiveProject } from '../store/project.store'
@@ -31,6 +30,7 @@ function SlugPage() {
 
   const handleCreateProject = (name: string, description?: string) => {
     const newProject = createProject(name, description)
+    if (!newProject) return
     setModalOpen(false)
     navigate({ to: '/$slug', params: { slug: newProject.slug } })
   }
@@ -40,7 +40,7 @@ function SlugPage() {
     return (
        <div className="flex flex-col h-screen items-center justify-center bg-background p-4">
          <h1 className="text-xl font-bold mb-2 text-foreground">Project not found</h1>
-         <p className="text-muted-foreground mb-6">The project you're looking for doesn't exist or has been moved.</p>
+         <p className="text-muted-foreground mb-6">The project you"re looking for doesn"t exist or has been moved.</p>
          <button 
            onClick={() => navigate({ to: '/projects' })}
            className="px-4 py-2 bg-primary text-white rounded-lg font-medium"
@@ -52,21 +52,16 @@ function SlugPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-background">
-      <div className="relative z-[100] w-full pointer-events-auto">
-        <Toolbar />
-      </div>
-      <div className="flex-1 flex overflow-hidden relative">
-        <main className="flex-1 relative overflow-hidden z-10">
-          <ReactFlowProvider>
-            <DiagramCanvas />
-          </ReactFlowProvider>
-        </main>
-        
-        <div className="absolute inset-y-4 left-4 z-[200] pointer-events-none">
-          <div className="pointer-events-auto h-full">
-            <Sidebar />
-          </div>
+    <>
+      <main className="flex-1 relative overflow-hidden z-10">
+        <ReactFlowProvider>
+          <DiagramCanvas />
+        </ReactFlowProvider>
+      </main>
+      
+      <div className="absolute inset-y-4 left-4 z-200 pointer-events-none">
+        <div className="pointer-events-auto h-full">
+          <Sidebar />
         </div>
       </div>
 
@@ -75,6 +70,6 @@ function SlugPage() {
         onClose={() => setModalOpen(false)}
         onCreate={handleCreateProject}
       />
-    </div>
+    </>
   )
 }
