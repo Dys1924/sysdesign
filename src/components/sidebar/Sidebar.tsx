@@ -7,6 +7,7 @@ import {
   type NodeTemplate,
 } from "../../types/diagram";
 import { useProjectStore } from "../../store/project.store";
+import { useCanvasStore } from "../../store/canvas.store";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -37,6 +38,9 @@ const CATEGORY_ORDER: NodeCategory[] = [
   "observability",
   "ai",
   "devops",
+  "flow",
+  "shape",
+  "c4",
 ];
 
 /**
@@ -162,8 +166,10 @@ type TabId =
  */
 export default function Sidebar() {
   const activeProjectId = useProjectStore((s) => s.activeProjectId);
+  const diagramMode = useCanvasStore((s) => s.diagramMode);
   const [query, setQuery] = React.useState("");
   const [activeTab, setActiveTab] = React.useState<TabId>("components");
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   const [expanded, setExpanded] = React.useState<Record<NodeCategory, boolean>>(
     {
@@ -178,6 +184,7 @@ export default function Sidebar() {
       devops: false,
       flow: false,
       shape: false,
+      c4: false,
     },
   );
 
@@ -209,6 +216,7 @@ export default function Sidebar() {
       devops: [],
       flow: [],
       shape: [],
+      c4: [],
     };
 
     REGISTRY.forEach((t) => items[t.category].push(t));
@@ -232,16 +240,17 @@ export default function Sidebar() {
         <button
           onClick={() => {
             setActiveTab(id);
+            if (isCollapsed) setIsCollapsed(false);
           }}
           className={cn(
             "group relative flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200",
-            activeTab === id
+            activeTab === id && !isCollapsed
               ? "bg-primary/10 text-primary shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]"
               : "text-muted-foreground hover:bg-muted hover:text-foreground",
           )}
         >
           <Icon size={20} stroke={1.5} />
-          {activeTab === id && (
+          {activeTab === id && !isCollapsed && (
             <div className="absolute left-0 h-5 w-0.5 rounded-full bg-primary" />
           )}
         </button>
@@ -256,7 +265,7 @@ export default function Sidebar() {
   );
 
   return (
-    <div className="flex h-full border-r border-border bg-background select-none">
+    <div className="flex h-full border-r border-border bg-background select-none transition-all duration-300">
       {/* Left Rail */}
       <div className="flex flex-col items-center py-4 w-[52px] border-r border-border/50 bg-muted/30 gap-2 shrink-0">
         <RailIcon
@@ -284,14 +293,37 @@ export default function Sidebar() {
             icon={TablerIcons.IconSettings}
             label="Settings"
           />
+          
+          <Tooltip>
+            <TooltipTrigger>
+              <button
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="group flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
+              >
+                <TablerIcons.IconChevronLeft 
+                  size={20} 
+                  stroke={1.5} 
+                  className={cn("transition-transform duration-300", isCollapsed && "rotate-180")} 
+                />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="font-medium text-[11px] py-1 shadow-2xl">
+              {isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
       {/* Content Panel */}
-      <aside className="w-[260px] flex flex-col overflow-hidden bg-card">
+      <aside 
+        className={cn(
+          "flex flex-col overflow-hidden bg-card transition-all duration-300 ease-in-out",
+          isCollapsed ? "w-0 opacity-0 pointer-events-none" : "w-[260px] opacity-100"
+        )}
+      >
         {/* Header */}
         <div className="shrink-0 px-4 py-3 border-b border-border/50">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3 whitespace-nowrap">
             <h2 className="text-[13px] font-bold text-foreground tracking-tight">
               {activeTab === "components"
                 ? "Components"
@@ -345,47 +377,73 @@ export default function Sidebar() {
         <div className="flex-1 overflow-y-auto py-2 px-1 custom-scrollbar">
           {activeTab === "components" && !query && (
             <>
-              {CATEGORY_ORDER.map((cat) => {
-                const style = CATEGORY_STYLE[cat];
-                const items = grouped[cat];
-                const isExpanded = expanded[cat];
-                return (
-                  <div key={cat} className="mb-0.5">
-                    <button
-                      onClick={() => toggleCategory(cat)}
-                      className="w-full flex items-center justify-between px-3 py-1.5 hover:bg-muted/50 transition-colors group/row"
-                    >
-                      <div className="flex items-center gap-2">
-                        <TablerIcons.IconChevronRight
-                          size={12}
-                          className={cn(
-                            "text-muted-foreground/50 transition-transform duration-200",
-                            isExpanded && "rotate-90 text-foreground",
-                          )}
-                        />
-                        <h6 className="text-sm font-semibold text-foreground/85 group-hover/row:text-foreground">
-                          {style.label}
-                        </h6>
-                      </div>
-                      <span className="text-[9px] font-medium text-muted-foreground/60 bg-muted/80 px-1.5 py-0.5 rounded-sm">
-                        {items.length}
+              {diagramMode === "c4" ? (
+                /* C4 Mode Palette */
+                <div className="flex flex-col gap-2 py-2">
+                  {[
+                    { label: "Level 1: System Context", filter: (n: any) => n.subtype.startsWith('c4-person') || n.subtype === 'c4-system' || n.subtype === 'c4-external-system' },
+                    { label: "Level 2: Containers", filter: (n: any) => ['c4-web-app', 'c4-mobile-app', 'c4-api', 'c4-database', 'c4-message-bus', 'c4-microservice', 'c4-serverless'].includes(n.subtype) },
+                    { label: "Level 3: Components", filter: (n: any) => ['c4-component', 'c4-controller', 'c4-service', 'c4-repository', 'c4-gateway'].includes(n.subtype) }
+                  ].map((section) => (
+                    <div key={section.label} className="px-3 pb-3 border-b border-border/40 last:border-0">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-3 block">
+                        {section.label}
                       </span>
-                    </button>
-
-                    {isExpanded && (
-                      <div className="py-1 space-y-0.5">
-                        {items.map((t) => (
-                          <NodeItem
-                            key={t.subtype}
-                            template={t}
-                            disabled={!activeProjectId}
-                          />
+                      <div className="flex flex-wrap gap-2">
+                        {grouped.c4.filter(section.filter).map((t) => (
+                          <NodeItem key={t.subtype} template={t} disabled={!activeProjectId} />
                         ))}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                /* Standard Mode Palette */
+                CATEGORY_ORDER.map((cat) => {
+                  if (cat === "c4") return null;
+                  const style = CATEGORY_STYLE[cat];
+                  const items = grouped[cat];
+                  const isExpanded = expanded[cat];
+                  if (items.length === 0) return null;
+
+                  return (
+                    <div key={cat} className="mb-0.5">
+                      <button
+                        onClick={() => toggleCategory(cat)}
+                        className="w-full flex items-center justify-between px-3 py-1.5 hover:bg-muted/50 transition-colors group/row"
+                      >
+                        <div className="flex items-center gap-2">
+                          <TablerIcons.IconChevronRight
+                            size={12}
+                            className={cn(
+                              "text-muted-foreground/50 transition-transform duration-200",
+                              isExpanded && "rotate-90 text-foreground",
+                            )}
+                          />
+                          <h6 className="text-sm font-semibold text-foreground/85 group-hover/row:text-foreground">
+                            {style.label}
+                          </h6>
+                        </div>
+                        <span className="text-[9px] font-medium text-muted-foreground/60 bg-muted/80 px-1.5 py-0.5 rounded-sm">
+                          {items.length}
+                        </span>
+                      </button>
+
+                      {isExpanded && (
+                        <div className="px-3 py-1 flex flex-wrap gap-2">
+                          {items.map((t) => (
+                            <NodeItem
+                              key={t.subtype}
+                              template={t}
+                              disabled={!activeProjectId}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
             </>
           )}
 
@@ -451,7 +509,7 @@ export default function Sidebar() {
           {activeTab === "flows" && (
             <div className="py-2">
               <div className="px-4 mb-3">
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-3">
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-3 whitespace-nowrap">
                   ER Diagrams
                 </h3>
                 <div className="space-y-1">
@@ -478,7 +536,7 @@ export default function Sidebar() {
                 </div>
               </div>
               <div className="px-4 mt-6 mb-3">
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-3">
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-3 whitespace-nowrap">
                   Sequence Diagrams
                 </h3>
                 <div className="space-y-1">
@@ -509,7 +567,7 @@ export default function Sidebar() {
             <div className="py-2 px-3">
               {/* Standard Shapes */}
               <div className="mb-6">
-                <div className="flex items-center justify-between mb-3 px-1">
+                <div className="flex items-center justify-between mb-3 px-1 whitespace-nowrap">
                   <h3 className="text-[12px] font-bold text-foreground">
                     Standard
                   </h3>
@@ -538,7 +596,7 @@ export default function Sidebar() {
 
               {/* Flowchart Shapes */}
               <div className="mb-6">
-                <div className="flex items-center justify-between mb-3 px-1">
+                <div className="flex items-center justify-between mb-3 px-1 whitespace-nowrap">
                   <h3 className="text-[12px] font-bold text-foreground">
                     Flowchart
                   </h3>
@@ -566,7 +624,7 @@ export default function Sidebar() {
 
         {/* Custom Node Section - Always at bottom for Components tab */}
         {activeTab === "components" && !query && (
-          <div className="shrink-0 px-1 py-1 border-t border-border/30 pt-4 bg-muted/5">
+          <div className="shrink-0 px-1 py-1 border-t border-border/30 pt-4 bg-muted/5 min-h-[140px]">
             <NodeItem
               isCustom
               disabled={!activeProjectId}
@@ -589,13 +647,13 @@ export default function Sidebar() {
 
         {/* Footer info */}
         {!activeProjectId ? (
-          <div className="shrink-0 mt-auto border-t border-border/50 bg-black/5 p-3 min-h-[40px]">
+          <div className="shrink-0 mt-auto border-t border-border/50 bg-black/5 p-3 min-h-[60px]">
             <div className="flex flex-col gap-1 text-amber-500 animate-in fade-in slide-in-from-bottom-2">
               <span className="font-bold flex items-center gap-1 uppercase tracking-wider text-[9px]">
                 <TablerIcons.IconLock size={10} />
                 Editor Locked
               </span>
-              <p className="text-[11px] leading-tight opacity-90">
+              <p className="text-[11px] leading-tight opacity-90 whitespace-nowrap">
                 Select or create a project to start.
               </p>
             </div>
