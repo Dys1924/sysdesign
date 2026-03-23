@@ -26,6 +26,7 @@ import {
   redo,
   groupSelected,
   updateEdgeConnection,
+  setEditingNodeId,
   useCanvasStore,
 } from "../../store/canvas.store";
 import { CATEGORY_STYLE, type NodeTemplate } from "../../types/diagram";
@@ -59,7 +60,7 @@ export default function DiagramCanvas() {
   const edges = useCanvasStore((s) => s.edges);
   const snapToGrid = useCanvasStore((s) => s.snapToGrid);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const { fitView } = useReactFlow();
+  const { fitView, getNodes } = useReactFlow();
   const [showDelete, setShowDelete] = useState(false);
   const [showHint, setShowHint] = useState(() => {
     if (typeof window !== "undefined") {
@@ -182,12 +183,17 @@ export default function DiagramCanvas() {
     addNode(node);
   }, []);
 
-  const onSelectionEnd = useCallback(() => {
-    const selectedNodes = canvasStore.state.nodes.filter((n) => n.selected);
-    if (selectedNodes.length > 1) {
-      groupSelected();
-    }
+  const onPaneClick = useCallback(() => {
+    setEditingNodeId(null);
   }, []);
+
+  const onSelectionEnd = useCallback(() => {
+    const rawNodes = getNodes();
+    const selectedNodes = rawNodes.filter((n) => n.selected);
+    if (selectedNodes.length > 1) {
+      groupSelected(selectedNodes);
+    }
+  }, [getNodes]);
 
   return (
     <div ref={wrapRef} style={{ width: "100%", height: "100%" }}>
@@ -202,6 +208,7 @@ export default function DiagramCanvas() {
         onReconnect={onReconnect}
         onDragOver={onDragOver}
         onDrop={onDrop}
+        onPaneClick={onPaneClick}
         onSelectionEnd={onSelectionEnd}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}

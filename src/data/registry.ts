@@ -248,6 +248,48 @@ export const REGISTRY: NodeTemplate[] = [
   { subtype: 'dev-registry', label: 'Container Registry', category: 'devops', icon: 'IconBox', description: 'ECR, GCR, Docker Hub' },
   { subtype: 'dev-artifacts', label: 'Artifact Store', category: 'devops', icon: 'IconPackage', description: 'Nexus, Artifactory' },
   { subtype: 'dev-k8s', label: 'Kubernetes Cluster', category: 'devops', icon: 'IconBoxMultiple', description: 'Container Orchestration' },
-  { subtype: 'dev-helm', label: 'Helm Chart', category: 'devops', icon: 'IconAnchor', description: 'Package Management for K8s' }
+  { subtype: 'dev-helm', label: 'Helm Chart', category: 'devops', icon: 'IconAnchor', description: 'Package Management for K8s' },
+  
+  // ER Diagrams & Flows
+  { subtype: 'flow-table', label: 'Database Table', category: 'flow', icon: 'IconTable', description: 'Entity with columns and types' },
+  { subtype: 'flow-column', label: 'Table Column', category: 'flow', icon: 'IconLayoutRows', description: 'Field in a database table' },
+  { subtype: 'flow-pk', label: 'Primary Key', category: 'flow', icon: 'IconKey', description: 'Unique identifier for a record' },
+  { subtype: 'flow-fk', label: 'Foreign Key', category: 'flow', icon: 'IconLink', description: 'Reference to another table' },
+  { subtype: 'flow-rel', label: 'Relationship', category: 'flow', icon: 'IconHierarchy', description: 'Visual mapping between tables' },
+  
+  // Sequence Diagrams
+  { subtype: 'flow-actor', label: 'User Actor', category: 'flow', icon: 'IconUserCode', description: 'External user in sequence' },
+  { subtype: 'flow-participant', label: 'System Component', category: 'flow', icon: 'IconServerCog', description: 'Participant in a flow' },
+  { subtype: 'flow-api-call', label: 'API Call', category: 'flow', icon: 'IconReplace', description: 'Synchronous REST/gRPC call' },
+  { subtype: 'flow-auth-flow', label: 'Auth Flow', category: 'flow', icon: 'IconFingerprint', description: 'OCID / Token exchange flow' },
+  { subtype: 'flow-event', label: 'Event Message', category: 'flow', icon: 'IconRotateDot', description: 'Asynchronous event broadcase' },
+  { subtype: 'flow-db-op', label: 'DB Operation', category: 'flow', icon: 'IconDatabaseSearch', description: 'Read or write data access' },
+  
+  // Shapes - Standard
+  { subtype: 'sh-text', label: 'Text', category: 'shape', icon: 'IconType', description: 'Plain text label' },
+  { subtype: 'sh-rect', label: 'Rectangle', category: 'shape', icon: 'IconSquare', description: 'Simple rectangle shape' },
+  { subtype: 'sh-rounded', label: 'Rounded Rect', category: 'shape', icon: 'IconSquareRounded', description: 'Rectangle with rounded corners' },
+  { subtype: 'sh-sticky', label: 'Sticky Note', category: 'shape', icon: 'IconStickyNote', description: 'Yellow sticky note' },
+  { subtype: 'sh-bolt', label: 'Lightning', category: 'shape', icon: 'IconBolt', description: 'Logic or trigger bolt' },
+  { subtype: 'sh-arrow', label: 'Arrow', category: 'shape', icon: 'IconArrowUpRight', description: 'Directional arrow' },
+  { subtype: 'sh-list', label: 'List', category: 'shape', icon: 'IconList', description: 'List of items' },
+  { subtype: 'sh-play', label: 'Play', category: 'shape', icon: 'IconPlayerPlay', description: 'Action or start button' },
+  { subtype: 'sh-code', label: 'Code', category: 'shape', icon: 'IconCode', description: 'Code block or script' },
+  { subtype: 'sh-grid', label: 'Grid', category: 'shape', icon: 'IconGridDots', description: 'Matrix or grid layout' },
+  { subtype: 'sh-table', label: 'Table', category: 'shape', icon: 'IconTable', description: 'Data table structure' },
+  { subtype: 'sh-frame', label: 'Frame', category: 'shape', icon: 'IconFrame', description: 'Container or selection frame' },
+  
+  // Shapes - Flowchart
+  { subtype: 'sh-flow-rect', label: 'Process', category: 'shape', icon: 'IconSquare', description: 'Flowchart process step' },
+  { subtype: 'sh-flow-diamond', label: 'Decision', category: 'shape', icon: 'IconRhombus', description: 'Decision point' },
+  { subtype: 'sh-flow-oval', label: 'Terminator', category: 'shape', icon: 'IconCapsule', description: 'Start or end node' },
+  { subtype: 'sh-flow-doc', label: 'Document', category: 'shape', icon: 'IconFile', description: 'Input/output document' },
+  { subtype: 'sh-flow-multidoc', label: 'Multi-document', category: 'shape', icon: 'IconFiles', description: 'Multiple documents' },
+  { subtype: 'sh-flow-para', label: 'Data', category: 'shape', icon: 'IconParallelogram', description: 'I/O data parallelogram' },
+  { subtype: 'sh-flow-hex', label: 'Preparation', category: 'shape', icon: 'IconHexagon', description: 'Preparation step' },
+  { subtype: 'sh-flow-cylinder', label: 'Database', category: 'shape', icon: 'IconCylinder', description: 'Data storage cylinder' },
+  { subtype: 'sh-flow-circle', label: 'Connector', category: 'shape', icon: 'IconCircle', description: 'On-page connector' },
+  { subtype: 'sh-flow-plus', label: 'Summing', category: 'shape', icon: 'IconCirclePlus', description: 'Summing junction' },
+  { subtype: 'sh-flow-cross', label: 'Cancel', category: 'shape', icon: 'IconCircleX', description: 'Wait or cancel state' }
 ]
 

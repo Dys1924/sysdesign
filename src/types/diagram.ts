@@ -1,6 +1,6 @@
 import type { Node, Edge } from '@xyflow/react'
 
-export type NodeCategory = 'microservice' | 'cloud' | 'database' | 'frontend' | 'networking' | 'security' | 'observability' | 'ai' | 'devops'
+export type NodeCategory = 'microservice' | 'cloud' | 'database' | 'frontend' | 'networking' | 'security' | 'observability' | 'ai' | 'devops' | 'flow' | 'shape'
 
 
 export interface NodeMeta extends Record<string, unknown> {
@@ -54,7 +54,9 @@ export const NODE_TEMPLATES: Record<NodeCategory, NodeTemplate[]> = {
   security: [],
   observability: [],
   ai: [],
-  devops: [],
+  devops:        [],
+  flow:          [],
+  shape:         [],
 }
 
 
@@ -77,5 +79,7 @@ export const CATEGORY_STYLE: Record<NodeCategory, CategoryStyle> = {
   observability: { label: 'Observability', color: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE', text: '#5B21B6', pill: '#EDE9FE' },
   ai:            { label: 'AI / ML',       color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', text: '#1E40AF', pill: '#DBEAFE' },
   devops:        { label: 'DevOps',        color: '#4B5563', bg: '#F3F4F6', border: '#E5E7EB', text: '#1F2937', pill: '#F3F4F6' },
+  flow:          { label: 'Interactions',  color: '#D97706', bg: '#FEF3C7', border: '#FCD34D', text: '#92400E', pill: '#FEF3C7' },
+  shape:         { label: 'Shapes',        color: '#64748B', bg: '#F1F5F9', border: '#CBD5E1', text: '#334155', pill: '#F1F5F9' },
 }
 

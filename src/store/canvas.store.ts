@@ -40,6 +40,8 @@ export interface CanvasState {
   historyIndex: number
   /** Whether nodes should snap to the grid when moved */
   snapToGrid: boolean
+  /** The ID of the node currently in editing mode */
+  editingNodeId: string | null
 }
 
 const DEFAULT_CANVAS_STATE: CanvasState = {
@@ -49,6 +51,7 @@ const DEFAULT_CANVAS_STATE: CanvasState = {
   history: [{ nodes: [], edges: [] }],
   historyIndex: 0,
   snapToGrid: false,
+  editingNodeId: null,
 }
 
 async function load(): Promise<Partial<CanvasState>> {
@@ -374,47 +377,77 @@ export function loadTemplate(template: { nodes: any[], edges: any[] }) {
 
 /**
  * Groups selected nodes into a new container node.
+ * @param explicitNodes - Optional array of nodes to group directly (bypasses store selection)
  */
-export function groupSelected() {
+export function groupSelected(explicitNodes?: any[]) {
   canvasStore.setState((s) => {
-    const selected = s.nodes.filter(n => n.selected && !n.parentId);
-    if (selected.length < 1) return s;
+    // Identify which nodes to group: either passed explicitly or those selected in state
+    const targetNodes = explicitNodes || s.nodes.filter((n) => n.selected && !n.parentId);
+    if (targetNodes.length < 1) return s;
 
-    const minX = Math.min(...selected.map(n => n.position.x));
-    const minY = Math.min(...selected.map(n => n.position.y));
-    const maxX = Math.max(...selected.map(n => n.position.x + (n.measured?.width ?? 180)));
-    const maxY = Math.max(...selected.map(n => n.position.y + (n.measured?.height ?? 80)));
-    
-    const pad = 40;
-    const groupNode = {
-      id: `group-${Date.now()}`,
-      type: 'group',
-      position: { x: minX - pad, y: minY - pad },
-      style: {
-        width: maxX - minX + pad * 2,
-        height: maxY - minY + pad * 2 + 30, // Extra space for group label
-        backgroundColor: 'oklch(0.5 0 0 / 0.05)',
-        border: '1.5px dashed var(--border)',
-        borderRadius: 8,
-      },
-      data: { label: 'New Group' }
-    };
+    // Calculate bounding box using explicit defaults for unmeasured nodes
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
 
-    const nodes = s.nodes.map(n => {
-      if (n.selected && !n.parentId) {
-        return {
-          ...n,
-          parentId: groupNode.id,
-          position: { x: n.position.x - groupNode.position.x, y: n.position.y - groupNode.position.y }
-        }
-      }
-      return n;
+    targetNodes.forEach((n) => {
+      const w = n.measured?.width ?? 180;
+      const h = n.measured?.height ?? 100;
+      minX = Math.min(minX, n.position.x);
+      minY = Math.min(minY, n.position.y);
+      maxX = Math.max(maxX, n.position.x + w);
+      maxY = Math.max(maxY, n.position.y + h);
     });
 
-    const next = pushHistory({ ...s, nodes: [groupNode as any, ...nodes] });
-    save(next);
-    return next;
-  })
+    const pad = 40;
+    const groupId = `group-${Date.now()}`;
+    const groupNode = {
+      id: groupId,
+      type: "group",
+      position: { x: minX - pad, y: minY - pad },
+      selected: false, // Explicitly false to prevent "group within group" visual box
+      style: {
+        width: maxX - minX + pad * 2,
+        height: maxY - minY + pad * 2 + 20,
+        backgroundColor: "oklch(0.5 0 0 / 0.02)",
+        border: "1.5px dotted oklch(0.5 0 0 / 0.25)",
+        borderRadius: 12,
+      },
+      data: { label: "New Group", category: "flow" },
+    };
+
+    // Construct the new nodes array with updated parents and relative positions
+    const updatedNodes = s.nodes.map((n) => {
+      const isTarget = targetNodes.some((tn) => tn.id === n.id);
+      if (isTarget) {
+        return {
+          ...n,
+          selected: false, // Deselect nodes once they are grouped
+          parentId: groupId,
+          position: {
+            x: n.position.x - (minX - pad),
+            y: n.position.y - (minY - pad),
+          },
+        };
+      }
+      return { ...n, selected: false };
+    });
+
+    const nextState = {
+      ...s,
+      nodes: [groupNode as any, ...updatedNodes],
+    };
+
+    const withHistory = pushHistory(nextState);
+    save(withHistory);
+    return withHistory;
+  });
+}
+
+/**
+ * Sets the current node being edited, or null to close all editors.
+ * @param id - The unique ID of the node, or null
+ */
+export function setEditingNodeId(id: string | null) {
+  canvasStore.setState((s) => ({ ...s, editingNodeId: id }));
 }
 
 /**

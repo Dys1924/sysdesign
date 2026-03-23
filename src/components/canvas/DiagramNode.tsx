@@ -3,7 +3,7 @@ import type { NodeProps } from "@xyflow/react";
 import { Handle, Position } from "@xyflow/react";
 import { memo, useCallback, useState } from "react";
 import { cn } from "../../lib/utils";
-import { updateNodeMeta } from "../../store/canvas.store";
+import { updateNodeMeta, setEditingNodeId, useCanvasStore } from "../../store/canvas.store";
 import type { NodeMeta } from "../../types/diagram";
 import { CATEGORY_STYLE } from "../../types/diagram";
 import { Button } from "../ui/button";
@@ -50,12 +50,15 @@ const STATUS_CONFIG: Record<
  * Custom node component for the diagram representing system components.
  * Supports categorization (styling/icons), editing labels, notes, owners, and status badges.
  */
-function DiagramNode({ id, data, selected }: NodeProps) {
+function DiagramNode({ id, data, selected, type }: NodeProps) {
   const meta = data as NodeMeta;
-  const style = CATEGORY_STYLE[meta.category];
-  const Icon = getIcon(meta.icon as string);
+  const category = meta.category || "microservice";
+  const style = CATEGORY_STYLE[category as keyof typeof CATEGORY_STYLE];
+  const Icon = getIcon(meta.icon || "IconBox");
 
-  const [editing, setEditing] = useState(false);
+  const globalEditingId = useCanvasStore((s) => s.editingNodeId);
+  const editing = globalEditingId === id;
+
   const [draft, setDraft] = useState((meta.label as string) ?? "");
   const [draftNotes, setDraftNotes] = useState((meta.notes as string) ?? "");
   const [draftOwner, setDraftOwner] = useState((meta.owner as string) ?? "");
@@ -68,11 +71,15 @@ function DiagramNode({ id, data, selected }: NodeProps) {
     setDraftNotes((meta.notes as string) ?? "");
     setDraftOwner((meta.owner as string) ?? "");
     setDraftStatus((meta.status as Status) ?? "");
-    setEditing(true);
-  }, [meta.label, meta.notes, meta.owner, meta.status]);
+    setEditingNodeId(id);
+  }, [id, meta.label, meta.notes, meta.owner, meta.status]);
+
+  const closeEdit = useCallback(() => {
+    setEditingNodeId(null);
+  }, []);
 
   const commitEdit = useCallback(() => {
-    setEditing(false);
+    setEditingNodeId(null);
     const finalLabel = draft.trim() || (meta.label as string);
     setDraft(finalLabel);
     updateNodeMeta(id, {
@@ -94,16 +101,64 @@ function DiagramNode({ id, data, selected }: NodeProps) {
   const status = (meta.status as Status) || "";
   const statusCfg = status ? STATUS_CONFIG[status] : null;
 
+  const subtype = meta.subtype || "";
+  const isShape = subtype.startsWith("sh-");
+
+  // Determine shape-specific classes and styles
+  let shapeClass = "rounded-[10px]";
+  let shapeStyle: React.CSSProperties = {};
+
+  if (subtype === "sh-flow-diamond") {
+    shapeClass = "";
+    shapeStyle = {
+      clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
+    };
+  } else if (subtype === "sh-flow-circle" || subtype === "fe-user") {
+    shapeClass = "rounded-full aspect-square flex flex-col items-center justify-center p-4";
+  } else if (subtype === "sh-flow-para") {
+    shapeClass = "";
+    shapeStyle = {
+      clipPath: "polygon(15% 0%, 100% 0%, 85% 100%, 0% 100%)",
+    };
+  } else if (subtype === "sh-flow-hex") {
+    shapeClass = "";
+    shapeStyle = {
+      clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",
+    };
+  } else if (subtype === "sh-flow-oval") {
+    shapeClass = "rounded-full px-6";
+  } else if (subtype === "sh-sticky") {
+    shapeClass = "rounded-none rotate-1 shadow-md p-4";
+    shapeStyle = {
+      background: "#fef08a",
+      color: "#854f0b",
+      borderColor: "#facc15",
+    };
+  } else if (subtype === "sh-flow-cylinder") {
+    shapeClass = "rounded-[30%]"; // Approximate cylinder
+  }
+
+  const isGroup = type === "group";
+  const isFlow = (meta.category === "flow" || meta.category === "shape") && !isGroup;
+
   return (
     <div
       className={cn(
-        "relative rounded-[10px] px-3 py-2.5 transition-all duration-150 border",
-        editing ? "min-w-[220px] max-w-[240px]" : "min-w-[148px] max-w-[190px]",
+        "relative transition-all duration-150",
+        !isGroup && "px-3 py-2.5 border", // Groups handle their own padding/border
+        shapeClass,
+        editing ? "min-w-[220px] max-w-[240px]" : isFlow ? "min-w-[140px] aspect-4/3 flex flex-col items-center justify-center p-6 text-center" : isGroup ? "w-full h-full p-4!" : "min-w-[148px] max-w-[190px]",
         selected
-          ? "border-[var(--node-color)] bg-[color-mix(in_srgb,var(--node-color)_6%,var(--card))] shadow-[0_0_0_3px_color-mix(in_srgb,var(--node-color)_20%,transparent)]"
-          : "bg-card border-border shadow-[0_1px_4px_rgba(0,0,0,0.07)]",
+          ? "border-(--node-color) bg-[color-mix(in_srgb,var(--node-color)_6%,var(--card))] shadow-[0_0_0_3px_color-mix(in_srgb,var(--node-color)_20%,transparent)] border"
+          : cn(
+              isGroup ? "bg-muted/3 border-2 border-dashed border-muted-foreground/20" : isFlow ? "bg-card border-foreground border-2" : "bg-card border-border shadow-[0_1px_4px_rgba(0,0,0,0.07)]", 
+              subtype === "sh-sticky" && "border-yellow-400 bg-yellow-100/50"
+            ),
       )}
-      style={{ "--node-color": style.color } as React.CSSProperties}
+      style={{
+        ...shapeStyle,
+        "--node-color": subtype === "sh-sticky" ? "#facc15" : style.color,
+      } as React.CSSProperties}
     >
       {statusCfg && !editing && (
         <div
@@ -115,73 +170,38 @@ function DiagramNode({ id, data, selected }: NodeProps) {
           {statusCfg.label}
         </div>
       )}
-      {/* Handles — all 4 sides, source + target */}
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="top-t"
-        style={handleStyle}
-      />
-      <Handle
-        type="source"
-        position={Position.Top}
-        id="top-s"
-        style={handleStyle}
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="left-t"
-        style={handleStyle}
-      />
-      <Handle
-        type="source"
-        position={Position.Left}
-        id="left-s"
-        style={handleStyle}
-      />
-      <Handle
-        type="target"
-        position={Position.Right}
-        id="right-t"
-        style={handleStyle}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="right-s"
-        style={handleStyle}
-      />
-      <Handle
-        type="target"
-        position={Position.Bottom}
-        id="bottom-t"
-        style={handleStyle}
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="bottom-s"
-        style={handleStyle}
-      />
+      {/* Handles — all 4 sides, source + target — hidden for groups */}
+      {!isGroup && (
+        <>
+          <Handle type="target" position={Position.Top} id="top-t" style={handleStyle} />
+          <Handle type="source" position={Position.Top} id="top-s" style={handleStyle} />
+          <Handle type="target" position={Position.Left} id="left-t" style={handleStyle} />
+          <Handle type="source" position={Position.Left} id="left-s" style={handleStyle} />
+          <Handle type="target" position={Position.Right} id="right-t" style={handleStyle} />
+          <Handle type="source" position={Position.Right} id="right-s" style={handleStyle} />
+          <Handle type="target" position={Position.Bottom} id="bottom-t" style={handleStyle} />
+          <Handle type="source" position={Position.Bottom} id="bottom-s" style={handleStyle} />
+        </>
+      )}
 
-      {/* Header: icon + category label + status badge */}
-      <div className="flex items-center justify-between gap-2 mb-1.5">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <div
-            className="size-6 rounded-md flex items-center justify-center shrink-0"
-            style={{ background: style.pill, color: style.color }}
-          >
-            <Icon size={10} stroke={1.8} />
+      {!isFlow && !isGroup && (
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <div
+              className="size-6 rounded-md flex items-center justify-center shrink-0"
+              style={{ background: style.pill, color: style.color }}
+            >
+              <Icon size={10} stroke={1.8} />
+            </div>
+            <h6
+              className="text-[9px] font-medium tracking-widest truncate"
+              style={{ color: subtype === "sh-sticky" ? "#854f0b" : style.text }}
+            >
+              {isShape ? "Note" : style.label}
+            </h6>
           </div>
-          <h6
-            className="text-[9px] font-medium tracking-widest truncate"
-            style={{ color: style.text }}
-          >
-            {style.label}
-          </h6>
         </div>
-      </div>
+      )}
 
       {/* Edit form */}
       {editing ? (
@@ -195,7 +215,7 @@ function DiagramNode({ id, data, selected }: NodeProps) {
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") commitEdit();
-              if (e.key === "Escape") setEditing(false);
+              if (e.key === "Escape") closeEdit();
             }}
           />
           <Input
@@ -260,13 +280,18 @@ function DiagramNode({ id, data, selected }: NodeProps) {
         </div>
       ) : (
         /* Read view */
-        <div onDoubleClick={openEdit} className="cursor-text">
-          <div className="flex flex-wrap gap-1 align-center align-self-center">
-            <IconPencilBolt size={10} stroke={1.8} />
-            <h6 className="text-[8px] font-semibold">{meta.label as string}</h6>
+        <div onDoubleClick={openEdit} className={cn("cursor-text", isFlow && "flex flex-col items-center", isGroup && "flex items-start")}>
+          <div className={cn("flex flex-wrap gap-1 items-center", (isFlow || isGroup) && "justify-center", isGroup && "w-full opacity-60")}>
+            {!isFlow && !isGroup && <IconPencilBolt size={10} stroke={1.8} />}
+            <h6 className={cn(
+              "font-semibold",
+              isFlow ? "text-sm" : isGroup ? "text-[10px] uppercase tracking-wider" : "text-[8px]"
+            )}>
+              {meta.label as string}
+            </h6>
           </div>
 
-          {meta.description && (
+          {meta.description && !isFlow && (
             <div className="text-[7px] text-muted-foreground mt-0.5">
               {meta.description as string}
             </div>

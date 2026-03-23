@@ -15,7 +15,12 @@ import {
 } from "@/components/ui/tooltip";
 import { Input } from "../ui/input";
 
-type TablerIcon = React.FC<{ size?: number; stroke?: number; color?: string }>;
+type TablerIcon = React.FC<{
+  size?: number;
+  stroke?: number;
+  color?: string;
+  className?: string;
+}>;
 
 function getIcon(name: string): TablerIcon {
   const icons = TablerIcons as Record<string, unknown>;
@@ -93,11 +98,61 @@ function NodeItem({
   );
 }
 
+/**
+ * Compact version of NodeItem for the shapes grid.
+ */
+function ShapeItem({
+  template,
+  disabled = false,
+}: {
+  template: NodeTemplate;
+  disabled?: boolean;
+}) {
+  const Icon = getIcon(template.icon);
+
+  const onDragStart = (e: React.DragEvent) => {
+    if (disabled) {
+      e.preventDefault();
+      return;
+    }
+    e.dataTransfer.setData("application/sysdesign", JSON.stringify(template));
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <div
+          draggable
+          onDragStart={onDragStart}
+          className={cn(
+            "w-[42px] h-[40px] rounded-md flex items-center justify-center border border-border/40 hover:bg-muted hover:border-primary/40 transition-all cursor-grab active:cursor-grabbing group",
+            disabled && "opacity-30 cursor-not-allowed",
+          )}
+        >
+          <Icon
+            size={20}
+            stroke={1.2}
+            className="text-foreground/70 group-hover:text-primary transition-colors"
+          />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent
+        side="bottom"
+        className="text-[10px] py-1 px-2 font-medium bg-popover/90 backdrop-blur-sm"
+      >
+        {template.label}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 type TabId =
   | "components"
   | "search"
   | "templates"
   | "integrations"
+  | "flows"
   | "shapes"
   | "settings";
 
@@ -121,6 +176,8 @@ export default function Sidebar() {
       observability: false,
       ai: false,
       devops: false,
+      flow: false,
+      shape: false,
     },
   );
 
@@ -150,6 +207,8 @@ export default function Sidebar() {
       observability: [],
       ai: [],
       devops: [],
+      flow: [],
+      shape: [],
     };
 
     REGISTRY.forEach((t) => items[t.category].push(t));
@@ -216,6 +275,7 @@ export default function Sidebar() {
           icon={TablerIcons.IconPuzzle}
           label="Integrations"
         />
+        <RailIcon id="flows" icon={TablerIcons.IconHierarchy} label="Flows" />
         <RailIcon id="shapes" icon={TablerIcons.IconShape} label="Shapes" />
 
         <div className="mt-auto flex flex-col gap-2">
@@ -241,9 +301,11 @@ export default function Sidebar() {
                     ? "AI Templates"
                     : activeTab === "integrations"
                       ? "Integrations"
-                      : activeTab === "shapes"
-                        ? "Shapes"
-                        : "Settings"}
+                      : activeTab === "flows"
+                        ? "Flows"
+                        : activeTab === "shapes"
+                          ? "Shapes"
+                          : "Settings"}
             </h2>
             <div className="flex gap-1">
               <button className="p-1 rounded-md hover:bg-muted text-muted-foreground">
@@ -386,14 +448,118 @@ export default function Sidebar() {
             </div>
           )}
 
+          {activeTab === "flows" && (
+            <div className="py-2">
+              <div className="px-4 mb-3">
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-3">
+                  ER Diagrams
+                </h3>
+                <div className="space-y-1">
+                  {grouped.flow
+                    .filter(
+                      (t) =>
+                        t.subtype.startsWith("flow-") &&
+                        ![
+                          "actor",
+                          "participant",
+                          "api-call",
+                          "auth-flow",
+                          "event",
+                          "db-op",
+                        ].some((s) => t.subtype.includes(s)),
+                    )
+                    .map((t) => (
+                      <NodeItem
+                        key={t.subtype}
+                        template={t}
+                        disabled={!activeProjectId}
+                      />
+                    ))}
+                </div>
+              </div>
+              <div className="px-4 mt-6 mb-3">
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-3">
+                  Sequence Diagrams
+                </h3>
+                <div className="space-y-1">
+                  {grouped.flow
+                    .filter((t) =>
+                      [
+                        "actor",
+                        "participant",
+                        "api-call",
+                        "auth-flow",
+                        "event",
+                        "db-op",
+                      ].some((s) => t.subtype.includes(s)),
+                    )
+                    .map((t) => (
+                      <NodeItem
+                        key={t.subtype}
+                        template={t}
+                        disabled={!activeProjectId}
+                      />
+                    ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === "shapes" && (
-            <div className="px-4 py-8 text-center flex flex-col items-center text-muted-foreground">
-              <TablerIcons.IconShape
-                size={24}
-                stroke={1}
-                className="mb-2 opacity-20"
-              />
-              <p className="text-[11px]">Shapes coming soon</p>
+            <div className="py-2 px-3">
+              {/* Standard Shapes */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <h3 className="text-[12px] font-bold text-foreground">
+                    Standard
+                  </h3>
+                  <div className="flex gap-2 text-muted-foreground/40">
+                    <TablerIcons.IconStar size={14} />
+                    <TablerIcons.IconTrash size={14} />
+                    <TablerIcons.IconChevronUp size={14} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-5 gap-1.5 justify-items-center">
+                  {grouped.shape
+                    .filter(
+                      (t) =>
+                        t.subtype.startsWith("sh-") &&
+                        !t.subtype.includes("flow"),
+                    )
+                    .map((t) => (
+                      <ShapeItem
+                        key={t.subtype}
+                        template={t}
+                        disabled={!activeProjectId}
+                      />
+                    ))}
+                </div>
+              </div>
+
+              {/* Flowchart Shapes */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <h3 className="text-[12px] font-bold text-foreground">
+                    Flowchart
+                  </h3>
+                  <div className="flex gap-2 text-muted-foreground/40">
+                    <TablerIcons.IconStar size={14} />
+                    <TablerIcons.IconTrash size={14} />
+                    <TablerIcons.IconChevronUp size={14} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-5 gap-1.5 justify-items-center">
+                  {grouped.shape
+                    .filter((t) => t.subtype.includes("flow"))
+                    .map((t) => (
+                      <ShapeItem
+                        key={t.subtype}
+                        template={t}
+                        disabled={!activeProjectId}
+                      />
+                    ))}
+                </div>
+              </div>
             </div>
           )}
         </div>
