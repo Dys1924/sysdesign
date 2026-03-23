@@ -41,7 +41,7 @@ export default function MobileBlock() {
 
       <div className="mt-auto pb-10">
         <div className="text-[12px] font-medium text-primary/80 flex items-center gap-2">
-          <span>https://sysdesign.obare27.com/</span>
+          <span>https://sysdesign.obare27.com</span>
         </div>
       </div>
     </div>

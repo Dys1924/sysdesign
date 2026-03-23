@@ -27,27 +27,53 @@ export interface InputProps
     Omit<React.ComponentProps<"input">, "size">,
     VariantProps<typeof inputVariants> {
   size?: VariantProps<typeof inputVariants>["size"];
+  startIcon?: React.ReactNode;
+  endIcon?: React.ReactNode;
 }
 
-// function Input({ className, type, size, ...props }: InputProps) {
-//   return (
-//     <InputPrimitive
-//       type={type}
-//       data-slot="input"
-//       className={cn(inputVariants({ size }), className)}
-//       {...props}
-//     />
-//   );
-// }
+function Input({
+  className,
+  type,
+  size,
+  startIcon,
+  endIcon,
+  ...props
+}: InputProps) {
+  if (!startIcon && !endIcon) {
+    return (
+      <InputPrimitive
+        type={type}
+        data-slot="input"
+        className={cn(inputVariants({ size, className }))}
+        {...props}
+      />
+    );
+  }
 
-function Input({ className, type, size, ...props }: InputProps) {
   return (
-    <InputPrimitive
-      type={type}
-      data-slot="input"
-      className={cn(inputVariants({ size, className }))}
-      {...props}
-    />
+    <div className="relative flex items-center w-full">
+      {startIcon && (
+        <div className="absolute left-2.5 flex items-center pointer-events-none text-muted-foreground">
+          {startIcon}
+        </div>
+      )}
+      <InputPrimitive
+        type={type}
+        data-slot="input"
+        className={cn(
+          inputVariants({ size }),
+          startIcon && "pl-8",
+          endIcon && "pr-8",
+          className,
+        )}
+        {...props}
+      />
+      {endIcon && (
+        <div className="absolute right-2.5 flex items-center pointer-events-none text-muted-foreground">
+          {endIcon}
+        </div>
+      )}
+    </div>
   );
 }
 

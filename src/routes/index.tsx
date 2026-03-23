@@ -4,6 +4,7 @@ import Sidebar from '../components/sidebar/Sidebar'
 import DiagramCanvas from '../components/canvas/DiagramCanvas'
 import { createProject, useProjectStore } from '../store/project.store'
 import ProjectSetupPopup from '../components/dashboard/ProjectSetupPopup'
+import { cn } from "@/lib/utils";
 
 /**
  * Root route for the application.
@@ -52,16 +53,14 @@ function HomePage() {
   }
 
   return (
-    <>
+    <div className="flex-1 flex h-full overflow-hidden">
+      <div className={cn("h-full transition-all duration-300", !hasProjects ? "opacity-50 grayscale select-none" : "")}>
+        <Sidebar />
+      </div>
+
       <main className="flex-1 relative overflow-hidden z-10">
         <DiagramCanvas />
       </main>
-      
-      <div className={`absolute inset-y-4 left-4 z-200 transition-all duration-300 pointer-events-none ${!hasProjects ? 'opacity-50 grayscale select-none' : ''}`}>
-        <div className={`${hasProjects ? 'pointer-events-auto' : ''} h-full`}>
-          <Sidebar />
-        </div>
-      </div>
 
       {!hasProjects && (
         <div className="absolute inset-0 z-500 bg-background/5" />
@@ -72,6 +71,6 @@ function HomePage() {
         onClose={() => setModalOpen(false)}
         onCreate={handleCreateProject}
       />
-    </>
+    </div>
   )
 }

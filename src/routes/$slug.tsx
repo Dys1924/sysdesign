@@ -69,22 +69,18 @@ function SlugPage() {
   }
 
   return (
-    <>
+    <div className="flex-1 flex h-full overflow-hidden">
+      <Sidebar />
+
       <main className="flex-1 relative overflow-hidden z-10">
         <DiagramCanvas />
       </main>
-
-      <div className="absolute inset-y-4 left-4 z-200 pointer-events-none">
-        <div className="pointer-events-auto h-full">
-          <Sidebar />
-        </div>
-      </div>
 
       <ProjectSetupPopup
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onCreate={handleCreateProject}
       />
-    </>
+    </div>
   );
 }
