@@ -2,15 +2,14 @@ import { useState } from "react";
 import {
   IconFolderPlus,
   IconX,
-  IconLoader2,
-  IconInfoCircle,
   IconFolder,
 } from "@tabler/icons-react";
-import { useProjectStore, MAX_PROJECTS } from "../../store/project.store";
+import { useProjectStore, MAX_PROJECTS, type ProjectType } from "../../store/project.store";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Label } from "../ui/label";
+import { cn } from "../../lib/utils";
 
 /**
  * Props for the ProjectSetupPopup component.
@@ -21,7 +20,7 @@ interface ProjectSetupPopupProps {
   /** Callback function to close the modal */
   onClose: () => void;
   /** Callback function called when a new project is submitted */
-  onCreate: (name: string, description?: string) => void;
+  onCreate: (name: string, type: ProjectType, description?: string) => void;
 }
 
 /**
@@ -35,6 +34,7 @@ export default function ProjectSetupPopup({
 }: ProjectSetupPopupProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [type, setType] = useState<ProjectType>("design");
   const [loading, setLoading] = useState(false);
   const projects = useProjectStore((s) => s.projects);
   const isLimitReached = projects.length >= MAX_PROJECTS;
@@ -47,9 +47,10 @@ export default function ProjectSetupPopup({
 
     setLoading(true);
     setTimeout(() => {
-      onCreate(name, description);
+      onCreate(name, type, description);
       setName("");
       setDescription("");
+      setType("design");
       setLoading(false);
     }, 400);
   };
@@ -86,6 +87,36 @@ export default function ProjectSetupPopup({
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Project Type</Label>
+            <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-lg border border-border/50">
+              <button
+                type="button"
+                onClick={() => setType("design")}
+                className={cn(
+                  "flex items-center justify-center gap-2 py-2 rounded-md text-xs font-semibold transition-all",
+                  type === "design"
+                    ? "bg-card text-foreground shadow-sm border border-border/50"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                Architecture
+              </button>
+              <button
+                type="button"
+                onClick={() => setType("c4")}
+                className={cn(
+                  "flex items-center justify-center gap-2 py-2 rounded-md text-xs font-semibold transition-all",
+                  type === "c4"
+                    ? "bg-card text-foreground shadow-sm border border-border/50"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                C4 Model
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-col gap-1.5">

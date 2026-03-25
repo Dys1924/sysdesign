@@ -16,20 +16,15 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Textarea } from "../ui/textarea";
-
 import { IconPencilBolt } from "@tabler/icons-react";
 
 type TablerIconComponent = React.FC<{
   size?: number;
   stroke?: number;
   color?: string;
+  className?: string;
 }>;
 
-/**
- * Dynamically resolves a Tabler Icon component by its string name.
- * @param name - The name of the icon (e.g., 'IconBox')
- * @returns The React component for the icon, or a default IconBox if not found.
- */
 function getIcon(name: string): TablerIconComponent {
   const icons = TablerIcons as Record<string, unknown>;
   return (icons[name] as TablerIconComponent) ?? TablerIcons.IconBox;
@@ -41,20 +36,52 @@ const STATUS_CONFIG: Record<
   Exclude<Status, "">,
   { label: string; className: string }
 > = {
-  existing: { label: "Existing", className: "bg-emerald-500 text-white" },
-  planned: { label: "Planned", className: "bg-blue-500 text-white" },
-  deprecated: { label: "Deprecated", className: "bg-red-500 text-white" },
+  existing:   { label: "Existing",   className: "bg-[#0ea5e9] text-white" },
+  planned:    { label: "Planned",    className: "bg-[#0f62fe] text-white" },
+  deprecated: { label: "Deprecated", className: "bg-[#da1e28] text-white" },
 };
 
-/**
- * Custom node component for the diagram representing system components.
- * Supports categorization (styling/icons), editing labels, notes, owners, and status badges.
- */
+// ─── C4 abstraction styles — formal tones ────────────────────
+interface C4Style {
+  color: string;   // main accent color (icon, handles, borders)
+  pill: string;    // icon pill background
+  text: string;    // category label text color
+  label: string;   // display name of the abstraction
+  icon: string;    // default icon when none provided
+}
+
+const C4_STYLES: Record<string, C4Style> = {
+  "c4-person":          { color: "#0f62fe", pill: "#edf5ff", text: "#0043ce", label: "Person",    icon: "IconUser"     },
+  "c4-system":          { color: "#0f62fe", pill: "#edf5ff", text: "#0043ce", label: "System",    icon: "IconBox"      },
+  "c4-container":       { color: "#198038", pill: "#defbe6", text: "#0e6027", label: "Container", icon: "IconStack2"   },
+  "c4-component":       { color: "#d12771", pill: "#fff0f7", text: "#9f1853", label: "Component", icon: "IconPuzzle"   },
+  "c4-external-system": { color: "#525252", pill: "#f4f4f4", text: "#161616", label: "External",  icon: "IconBox"      },
+};
+
+function getC4Style(subtype: string): C4Style {
+  if (subtype.includes("external")) return C4_STYLES["c4-external-system"];
+  if (subtype.includes("person")) return C4_STYLES["c4-person"];
+  if (subtype.includes("container") || subtype.includes("app") || subtype.includes("microservice") || subtype.includes("db") || subtype.includes("api")) return C4_STYLES["c4-container"];
+  if (subtype.includes("component") || subtype.includes("service") || subtype.includes("repository")) return C4_STYLES["c4-component"];
+  return C4_STYLES["c4-system"];
+}
+
+// ─── Main DiagramNode ─────────────────────────────────────────────────────────
 function DiagramNode({ id, data, selected, type }: NodeProps) {
   const meta = data as NodeMeta;
   const category = meta.category || "microservice";
-  const style = CATEGORY_STYLE[category as keyof typeof CATEGORY_STYLE];
-  const Icon = getIcon(meta.icon || "IconBox");
+  const subtype = meta.subtype || "";
+  const isC4 = category === "c4";
+
+  // For C4 nodes use C4 style config; for others use CATEGORY_STYLE
+  const c4Style = isC4 ? getC4Style(subtype) : null;
+  const style = isC4
+    ? { color: c4Style!.color, pill: c4Style!.pill, text: c4Style!.text, label: c4Style!.label }
+    : CATEGORY_STYLE[category as keyof typeof CATEGORY_STYLE];
+
+  // Resolve icon: C4 may override icon from meta or use C4Style default
+  const iconName = meta.icon || (isC4 ? c4Style!.icon : "IconBox");
+  const Icon = getIcon(iconName);
 
   const globalEditingId = useCanvasStore((s) => s.editingNodeId);
   const diagramMode = useCanvasStore((s) => s.diagramMode);
@@ -75,9 +102,7 @@ function DiagramNode({ id, data, selected, type }: NodeProps) {
     setEditingNodeId(id);
   }, [id, meta.label, meta.notes, meta.owner, meta.status]);
 
-  const closeEdit = useCallback(() => {
-    setEditingNodeId(null);
-  }, []);
+  const closeEdit = useCallback(() => { setEditingNodeId(null); }, []);
 
   const commitEdit = useCallback(() => {
     setEditingNodeId(null);
@@ -92,84 +117,124 @@ function DiagramNode({ id, data, selected, type }: NodeProps) {
   }, [id, draft, draftNotes, draftOwner, draftStatus, meta.label]);
 
   const handleStyle: React.CSSProperties = {
-    width: 8,
-    height: 8,
-    background: style.color,
-    border: "2px solid var(--card)",
-    borderRadius: "99px",
+    width: 6,
+    height: 6,
+    background: "var(--card)",
+    border: `1.5px solid ${style.color}`,
+    borderRadius: "0px",
   };
 
   const status = (meta.status as Status) || "";
   const statusCfg = status ? STATUS_CONFIG[status] : null;
 
-  const subtype = meta.subtype || "";
   const isShape = subtype.startsWith("sh-");
+  const isGroup = type === "group";
+  const isFlow = (meta.category === "flow" || meta.category === "shape") && !isGroup && !isC4;
 
-  // Determine shape-specific classes and styles
-  let shapeClass = "rounded-[10px]";
+  // ── Shape geometry ─────────────────────────────────────────────────────────
+  let shapeClass = "rounded-[--radius]";
   let shapeStyle: React.CSSProperties = {};
 
-  if (subtype === "sh-flow-diamond") {
-    shapeClass = "";
-    shapeStyle = {
-      clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
-    };
-  } else if (subtype === "sh-flow-circle" || subtype === "fe-user") {
-    shapeClass = "rounded-full aspect-square flex flex-col items-center justify-center p-4";
-  } else if (subtype === "sh-flow-para") {
-    shapeClass = "";
-    shapeStyle = {
-      clipPath: "polygon(15% 0%, 100% 0%, 85% 100%, 0% 100%)",
-    };
-  } else if (subtype === "sh-flow-hex") {
-    shapeClass = "";
-    shapeStyle = {
-      clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",
-    };
-  } else if (subtype === "sh-flow-oval") {
-    shapeClass = "rounded-full px-6";
-  } else if (subtype === "sh-sticky") {
-    shapeClass = "rounded-none rotate-1 shadow-md p-4";
-    shapeStyle = {
-      background: "#fef08a",
-      color: "#854f0b",
-      borderColor: "#facc15",
-    };
-  } else if (subtype === "sh-flow-cylinder") {
-    shapeClass = "rounded-[30%]"; // Approximate cylinder
-  } else if (subtype === "c4-person") {
-    shapeClass = "rounded-full px-6 py-10 aspect-square flex flex-col items-center justify-center";
+  if (!isC4 && !isFlow && !isGroup) {
+    if (subtype === "sh-flow-diamond") {
+      shapeClass = "";
+      shapeStyle = { clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)" };
+    } else if (subtype === "sh-flow-circle" || subtype === "fe-user") {
+      shapeClass = "rounded-full aspect-square flex flex-col items-center justify-center p-4";
+    } else if (subtype === "sh-flow-para") {
+      shapeClass = "";
+      shapeStyle = { clipPath: "polygon(15% 0%, 100% 0%, 85% 100%, 0% 100%)" };
+    } else if (subtype === "sh-flow-hex") {
+      shapeClass = "";
+      shapeStyle = { clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)" };
+    } else if (subtype === "sh-flow-oval") {
+      shapeClass = "rounded-full px-6";
+    } else if (subtype === "sh-sticky") {
+      shapeClass = "rounded-none rotate-1 shadow-md p-4";
+      shapeStyle = { background: "#fef9c3", color: "#161616", borderColor: "#facc15" };
+    } else if (subtype === "sh-flow-cylinder") {
+      shapeClass = "rounded-[30%]";
+    }
   }
 
-  const isGroup = type === "group";
-  const isC4 = category === "c4";
-  const isFlow = (meta.category === "flow" || meta.category === "shape") && !isGroup && !isC4;
+  // ── Group node ─────────────────────────────────────────────────────────────
+  if (isGroup) {
+    return (
+      <div
+        className={cn(
+          "relative w-full h-full p-4! transition-all duration-150 rounded-[--radius]",
+          diagramMode === "c4"
+            ? "bg-muted/10 border-2 border-dashed border-muted-foreground/40"
+            : "bg-muted/5 border border-dashed border-muted-foreground/30",
+          selected && "border-primary/60 bg-primary/5",
+        )}
+      >
+        <Handle type="target"  position={Position.Top}    id="top-t"    style={handleStyle} />
+        <Handle type="source"  position={Position.Top}    id="top-s"    style={handleStyle} />
+        <Handle type="target"  position={Position.Left}   id="left-t"   style={handleStyle} />
+        <Handle type="source"  position={Position.Left}   id="left-s"   style={handleStyle} />
+        <Handle type="target"  position={Position.Right}  id="right-t"  style={handleStyle} />
+        <Handle type="source"  position={Position.Right}  id="right-s"  style={handleStyle} />
+        <Handle type="target"  position={Position.Bottom} id="bottom-t" style={handleStyle} />
+        <Handle type="source"  position={Position.Bottom} id="bottom-s" style={handleStyle} />
+        <div onDoubleClick={openEdit} className="flex items-start w-full opacity-60">
+          {editing ? (
+            <div className="flex flex-col gap-1.5">
+              <Input
+                autoFocus
+                size="xs"
+                className="nodrag py-1! text-[10px]!"
+                placeholder="Group name"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") commitEdit();
+                  if (e.key === "Escape") closeEdit();
+                }}
+              />
+              <Button onClick={commitEdit} variant="default" size="sm" className="text-[9px]! h-5 nodrag cursor-pointer">
+                Save
+              </Button>
+            </div>
+          ) : (
+            <h6 className="text-[9px] font-medium uppercase tracking-widest cursor-text text-foreground">
+              {meta.label as string}
+            </h6>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Shared card renderer for both Architecture + C4 nodes ─────────────────
+  // C4 nodes use the exact same card design as architecture nodes.
+  // The only differences are: color config, abstraction label, and (for Person) a circle icon pill.
+  const nodeColorVar = subtype === "sh-sticky" ? "#facc15" : style.color;
 
   return (
     <div
       className={cn(
-        "relative transition-all duration-150",
-        !isGroup && "px-3 py-2.5 border", 
+        "relative transition-all duration-150 px-3 py-2.5 border rounded-[--radius]",
         shapeClass,
-        editing ? "min-w-[220px] max-w-[240px]" : (isFlow || isC4) ? `${isC4 ? "min-w-[240px]" : "min-w-[180px]"} min-h-[100px] flex flex-col items-center justify-center p-6 text-center` : isGroup ? "w-full h-full p-4!" : "min-w-[148px] max-w-[190px]",
+        editing
+          ? "min-w-[220px] max-w-[240px]"
+          : isFlow
+          ? "min-w-[180px] min-h-[100px] flex flex-col items-center justify-center p-6 text-center"
+          : isC4
+          ? "min-w-[160px] max-w-[220px]"
+          : "min-w-[148px] max-w-[190px]",
         selected
-          ? "border-(--node-color) bg-[color-mix(in_srgb,var(--node-color)_6%,var(--card))] shadow-[0_0_0_3px_color-mix(in_srgb,var(--node-color)_20%,transparent)] border"
+          ? "border-(--node-color) bg-[color-mix(in_srgb,var(--node-color)_6%,var(--card))] shadow-[0_0_0_3px_color-mix(in_srgb,var(--node-color)_20%,transparent)]"
+          : isFlow
+          ? "bg-card border-2 border-foreground"
           : cn(
-              isGroup 
-                ? (diagramMode === 'c4' ? "bg-slate-50/50 border-2 border-slate-400 font-bold" : "bg-muted/3 border-2 border-dashed border-muted-foreground/20") 
-                : (isFlow || isC4) 
-                  ? cn(
-                      "border-2",
-                      isC4 ? "bg-[#1168BD] text-white border-[#0B4D8C] shadow-lg" : "bg-card border-foreground"
-                    ) 
-                  : "bg-card border-border shadow-[0_1px_4px_rgba(0,0,0,0.07)]", 
+              "bg-card border-border shadow-[0_1px_4px_rgba(0,0,0,0.07)]",
               subtype === "sh-sticky" && "border-yellow-400 bg-yellow-100/50",
-              subtype === "c4-external-system" && "border-dashed bg-slate-200 text-slate-800 border-slate-500 shadow-md"
             ),
       )}
       style={{
         ...shapeStyle,
-        "--node-color": subtype === "sh-sticky" ? "#facc15" : style.color,
+        "--node-color": nodeColorVar,
       } as React.CSSProperties}
     >
       {statusCfg && !editing && (
@@ -182,25 +247,27 @@ function DiagramNode({ id, data, selected, type }: NodeProps) {
           {statusCfg.label}
         </div>
       )}
-      {/* Handles — all 4 sides, source + target — hidden for groups */}
-      {!isGroup && (
-        <>
-          <Handle type="target" position={Position.Top} id="top-t" style={handleStyle} />
-          <Handle type="source" position={Position.Top} id="top-s" style={handleStyle} />
-          <Handle type="target" position={Position.Left} id="left-t" style={handleStyle} />
-          <Handle type="source" position={Position.Left} id="left-s" style={handleStyle} />
-          <Handle type="target" position={Position.Right} id="right-t" style={handleStyle} />
-          <Handle type="source" position={Position.Right} id="right-s" style={handleStyle} />
-          <Handle type="target" position={Position.Bottom} id="bottom-t" style={handleStyle} />
-          <Handle type="source" position={Position.Bottom} id="bottom-s" style={handleStyle} />
-        </>
-      )}
 
-      {!isFlow && !isGroup && !isC4 && (
+      {/* Handles */}
+      <Handle type="target"  position={Position.Top}    id="top-t"    style={handleStyle} />
+      <Handle type="source"  position={Position.Top}    id="top-s"    style={handleStyle} />
+      <Handle type="target"  position={Position.Left}   id="left-t"   style={handleStyle} />
+      <Handle type="source"  position={Position.Left}   id="left-s"   style={handleStyle} />
+      <Handle type="target"  position={Position.Right}  id="right-t"  style={handleStyle} />
+      <Handle type="source"  position={Position.Right}  id="right-s"  style={handleStyle} />
+      <Handle type="target"  position={Position.Bottom} id="bottom-t" style={handleStyle} />
+      <Handle type="source"  position={Position.Bottom} id="bottom-s" style={handleStyle} />
+
+      {/* Header row: icon pill + category/abstraction label */}
+      {!isFlow && (
         <div className="flex items-center justify-between gap-2 mb-1.5">
           <div className="flex items-center gap-1.5 min-w-0">
             <div
-              className="size-6 rounded-md flex items-center justify-center shrink-0"
+              className={cn(
+                "size-6 rounded-md flex items-center justify-center shrink-0",
+                // Person gets a circle pill to hint at the avatar shape
+                isC4 && subtype === "c4-person" && "rounded-full",
+              )}
               style={{ background: style.pill, color: style.color }}
             >
               <Icon size={10} stroke={1.8} />
@@ -233,58 +300,36 @@ function DiagramNode({ id, data, selected, type }: NodeProps) {
           <Input
             size="xs"
             className="nodrag py-1! text-[6px]!"
-            placeholder="Owner (e.g. Auth Team)"
+            placeholder={isC4 ? "Technology / role" : "Owner (e.g. Auth Team)"}
             value={draftOwner}
             onChange={(e) => setDraftOwner(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") commitEdit();
-            }}
+            onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); }}
           />
           <Textarea
-            placeholder="Notes… (Shift+Enter to save)"
+            placeholder={isC4 ? "Description…" : "Notes… (Shift+Enter to save)"}
             value={draftNotes}
             rows={4}
             className="resize-none nodrag px-2 py-1 text-[6px]! leading-tight min-h-4"
             onChange={(e) => setDraftNotes(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && e.shiftKey) {
-                e.preventDefault();
-                commitEdit();
-              }
+              if (e.key === "Enter" && e.shiftKey) { e.preventDefault(); commitEdit(); }
             }}
           />
-          <Select
-            value={draftStatus}
-            onValueChange={(val) => setDraftStatus(val as Status)}
-          >
-            <SelectTrigger
-              size="xs"
-              className="w-full nodrag text-[6px]! py-1! h-1"
-            >
-              <SelectValue
-                placeholder="No status"
-                className="text-[6px]! h-4!"
-              />
+          <Select value={draftStatus} onValueChange={(val) => setDraftStatus(val as Status)}>
+            <SelectTrigger size="xs" className="w-full nodrag text-[6px]! py-1! h-1">
+              <SelectValue placeholder="No status" className="text-[6px]! h-4!" />
             </SelectTrigger>
             <SelectContent className="nodrag">
-              <SelectItem value="" className="">
-                No status
-              </SelectItem>
-              <SelectItem value="existing" className="">
-                Existing
-              </SelectItem>
-              <SelectItem value="planned" className="">
-                Planned
-              </SelectItem>
-              <SelectItem value="deprecated" className="">
-                Deprecated
-              </SelectItem>
+              <SelectItem value="">No status</SelectItem>
+              <SelectItem value="existing">Existing</SelectItem>
+              <SelectItem value="planned">Planned</SelectItem>
+              <SelectItem value="deprecated">Deprecated</SelectItem>
             </SelectContent>
           </Select>
           <Button
             onClick={commitEdit}
             variant="default"
-            size={"sm"}
+            size="sm"
             className="w-full text-[6px]! h-6 active:scale-[0.98] transition-all cursor-pointer nodrag"
           >
             Save
@@ -292,66 +337,41 @@ function DiagramNode({ id, data, selected, type }: NodeProps) {
         </div>
       ) : (
         /* Read view */
-        <div onDoubleClick={openEdit} className={cn(
-          "cursor-text h-full", 
-          (isFlow || isC4) && "flex flex-col items-center justify-center", 
-          isGroup && (diagramMode === 'c4' ? "flex items-start" : "flex items-start")
-        )}>
-          {isC4 && subtype === 'c4-person' && (
-            <div className="mb-2 opacity-80">
-              <TablerIcons.IconUser size={32} stroke={1.5} />
-            </div>
-          )}
-
-          <div className={cn(
-            "flex flex-wrap gap-1 items-center", 
-            (isFlow || isC4 || isGroup) && "justify-center", 
-            isGroup && "w-full opacity-60",
-            isGroup && diagramMode === 'c4' && "justify-start opacity-100"
-          )}>
-            {!isFlow && !isGroup && !isC4 && <IconPencilBolt size={10} stroke={1.8} />}
-            <h6 className={cn(
-              "font-semibold",
-              isFlow ? "text-sm" : isC4 ? "text-base" : isGroup ? "text-[10px] uppercase tracking-wider" : "text-[8px]",
-              isGroup && diagramMode === 'c4' && "text-[9px] font-bold text-slate-500"
-            )}>
+        <div
+          onDoubleClick={openEdit}
+          className={cn("cursor-text h-full", isFlow && "flex flex-col items-center justify-center")}
+        >
+          <div className={cn("flex flex-wrap gap-1 items-center", isFlow && "justify-center")}>
+            {!isFlow && <IconPencilBolt size={10} stroke={1.8} />}
+            <h6 className={cn("font-semibold", isFlow ? "text-sm" : "text-[8px]")}>
               {meta.label as string}
             </h6>
           </div>
 
-          {isC4 && (
-            <div className="flex flex-col items-center gap-1 mt-1">
-              <div className="text-[10px] opacity-90 max-w-[160px] leading-snug">
-                {meta.description as string}
-              </div>
-              <div className="text-[9px] font-bold opacity-60 uppercase mt-2">
-                [{subtype.replace('c4-', '').replace('-', ' ')}]
-              </div>
+          {/* Description/notes shown for C4 and regular nodes */}
+          {(meta.description || meta.notes) && !isFlow && (
+            <div className="text-[7px] text-muted-foreground mt-0.5 leading-snug">
+              {(isC4 ? meta.notes || meta.description : meta.description) as string}
             </div>
           )}
 
-          {meta.description && !isFlow && !isC4 && (
-            <div className="text-[7px] text-muted-foreground mt-0.5">
-              {meta.description as string}
+          {/* Owner / tech badge */}
+          {meta.owner && !isFlow && (
+            <div
+              className="text-[7px] font-semibold mt-1"
+              style={{ color: style.color }}
+            >
+              {isC4 ? `[${meta.owner as string}]` : `@${meta.owner as string}`}
             </div>
           )}
 
-          {(meta.owner || meta.notes) && !isC4 && (
+          {/* Notes indicator for non-C4 */}
+          {meta.notes && !isC4 && !isFlow && (
             <div className="mt-1.5 pt-1.5 border-t border-dashed border-border flex flex-col gap-0.5">
-              {meta.owner && (
-                <div
-                  className="text-[10px] font-semibold"
-                  style={{ color: style.color }}
-                >
-                  @{meta.owner as string}
-                </div>
-              )}
-              {meta.notes && (
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                  <TablerIcons.IconNotes size={10} stroke={2} />
-                  <span className="text-[7px]">Notes attached</span>
-                </div>
-              )}
+              <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <TablerIcons.IconNotes size={10} stroke={2} />
+                <span className="text-[7px]">Notes attached</span>
+              </div>
             </div>
           )}
         </div>

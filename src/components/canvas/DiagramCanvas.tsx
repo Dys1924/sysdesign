@@ -245,9 +245,9 @@ export default function DiagramCanvas() {
       {/* Delete Confirmation Modal */}
       {showDelete && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-xl shadow-2xl p-6 max-w-sm w-full animate-in zoom-in-95 duration-200 flex flex-col gap-4">
+          <div className="bg-card border border-border rounded-[--radius] shadow-2xl p-6 max-w-sm w-full animate-in zoom-in-95 duration-200 flex flex-col gap-4">
             <div>
-              <h2 className="text-sm font-bold">Delete items?</h2>
+              <h2 className="text-sm font-medium">Delete items?</h2>
               <p className="text-xs">
                 {" "}
                 Are you sure you want to delete {selectedCount} selected item
@@ -266,16 +266,9 @@ export default function DiagramCanvas() {
                 Cancel
               </Button>
 
-              {/* <button
-                onClick={() => setShowDelete(false)}
-                className="px-4 py-2 text-sm font-medium text-foreground bg-secondary hover:bg-secondary/80 rounded-lg transition-colors border border-border"
-              >
-                Cancel
-              </button> */}
-
               <Button
                 icon={IconTrash}
-                iconSide="right"
+                iconSide="left"
                 variant="destructive"
                 onClick={() => {
                   deleteSelected();
@@ -284,16 +277,6 @@ export default function DiagramCanvas() {
               >
                 Delete
               </Button>
-
-              {/* <button
-                onClick={() => {
-                  deleteSelected();
-                  setShowDelete(false);
-                }}
-                className="px-4 py-2 text-sm font-medium text-white bg-destructive hover:bg-destructive/90 rounded-lg transition-colors shadow-sm"
-              >
-                Delete
-              </button> */}
             </div>
           </div>
         </div>
@@ -302,19 +285,19 @@ export default function DiagramCanvas() {
       <div className="absolute right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col items-end gap-3 pointer-events-none">
         {showHint && (
           <div className="animate-in slide-in-from-right-4 fade-in duration-300 pointer-events-auto">
-            <div className="relative bg-card/80 backdrop-blur-md border border-border/50 rounded-2xl p-5 shadow-2xl w-[260px] overflow-hidden">
+            <div className="relative bg-card border border-border rounded-[--radius] p-5 shadow-2xl w-[260px] overflow-hidden">
               <button
                 onClick={toggleHint}
-                className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-all cursor-pointer"
+                className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-all cursor-pointer rounded-none"
               >
                 <IconX size={14} />
               </button>
 
               <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 bg-primary/10 rounded-xl">
+                <div className="p-2 bg-primary/10 rounded-none">
                   <IconMouse size={18} className="text-primary" />
                 </div>
-                <h4 className="text-[13px] font-bold tracking-tight">
+                <h4 className="text-[13px] font-medium tracking-tight">
                   Navigation Tips
                 </h4>
               </div>
@@ -419,10 +402,10 @@ export default function DiagramCanvas() {
         <button
           onClick={toggleHint}
           className={cn(
-            "p-3 rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 pointer-events-auto cursor-pointer",
+            "p-3 rounded-none shadow-lg border backdrop-blur-md transition-all duration-300 pointer-events-auto cursor-pointer",
             showHint
               ? "bg-primary text-white border-primary translate-x-12 opacity-0"
-              : "bg-card/80 text-muted-foreground hover:text-foreground border-border/50 hover:border-primary/50 hover:shadow-primary/10",
+              : "bg-card text-muted-foreground hover:text-foreground border-border hover:border-primary/50 hover:shadow-primary/10",
           )}
           title="Show Navigation Tips"
         >

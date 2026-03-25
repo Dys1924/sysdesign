@@ -11,10 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TemplatesRouteImport } from './routes/templates'
+import { Route as ShapesRouteImport } from './routes/shapes'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as IntegrationsRouteImport } from './routes/integrations'
+import { Route as FlowsRouteImport } from './routes/flows'
 import { Route as SlugRouteImport } from './routes/$slug'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SlugC4RouteImport } from './routes/$slug.c4'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -24,6 +28,11 @@ const TermsRoute = TermsRouteImport.update({
 const TemplatesRoute = TemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShapesRoute = ShapesRouteImport.update({
+  id: '/shapes',
+  path: '/shapes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectsRoute = ProjectsRouteImport.update({
@@ -36,6 +45,16 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IntegrationsRoute = IntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FlowsRoute = FlowsRouteImport.update({
+  id: '/flows',
+  path: '/flows',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SlugRoute = SlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -46,52 +65,96 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SlugC4Route = SlugC4RouteImport.update({
+  id: '/c4',
+  path: '/c4',
+  getParentRoute: () => SlugRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/$slug': typeof SlugRoute
+  '/$slug': typeof SlugRouteWithChildren
+  '/flows': typeof FlowsRoute
+  '/integrations': typeof IntegrationsRoute
   '/privacy': typeof PrivacyRoute
   '/projects': typeof ProjectsRoute
+  '/shapes': typeof ShapesRoute
   '/templates': typeof TemplatesRoute
   '/terms': typeof TermsRoute
+  '/$slug/c4': typeof SlugC4Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/$slug': typeof SlugRoute
+  '/$slug': typeof SlugRouteWithChildren
+  '/flows': typeof FlowsRoute
+  '/integrations': typeof IntegrationsRoute
   '/privacy': typeof PrivacyRoute
   '/projects': typeof ProjectsRoute
+  '/shapes': typeof ShapesRoute
   '/templates': typeof TemplatesRoute
   '/terms': typeof TermsRoute
+  '/$slug/c4': typeof SlugC4Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/$slug': typeof SlugRoute
+  '/$slug': typeof SlugRouteWithChildren
+  '/flows': typeof FlowsRoute
+  '/integrations': typeof IntegrationsRoute
   '/privacy': typeof PrivacyRoute
   '/projects': typeof ProjectsRoute
+  '/shapes': typeof ShapesRoute
   '/templates': typeof TemplatesRoute
   '/terms': typeof TermsRoute
+  '/$slug/c4': typeof SlugC4Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$slug' | '/privacy' | '/projects' | '/templates' | '/terms'
+  fullPaths:
+    | '/'
+    | '/$slug'
+    | '/flows'
+    | '/integrations'
+    | '/privacy'
+    | '/projects'
+    | '/shapes'
+    | '/templates'
+    | '/terms'
+    | '/$slug/c4'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$slug' | '/privacy' | '/projects' | '/templates' | '/terms'
+  to:
+    | '/'
+    | '/$slug'
+    | '/flows'
+    | '/integrations'
+    | '/privacy'
+    | '/projects'
+    | '/shapes'
+    | '/templates'
+    | '/terms'
+    | '/$slug/c4'
   id:
     | '__root__'
     | '/'
     | '/$slug'
+    | '/flows'
+    | '/integrations'
     | '/privacy'
     | '/projects'
+    | '/shapes'
     | '/templates'
     | '/terms'
+    | '/$slug/c4'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  SlugRoute: typeof SlugRoute
+  SlugRoute: typeof SlugRouteWithChildren
+  FlowsRoute: typeof FlowsRoute
+  IntegrationsRoute: typeof IntegrationsRoute
   PrivacyRoute: typeof PrivacyRoute
   ProjectsRoute: typeof ProjectsRoute
+  ShapesRoute: typeof ShapesRoute
   TemplatesRoute: typeof TemplatesRoute
   TermsRoute: typeof TermsRoute
 }
@@ -112,6 +175,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TemplatesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shapes': {
+      id: '/shapes'
+      path: '/shapes'
+      fullPath: '/shapes'
+      preLoaderRoute: typeof ShapesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects': {
       id: '/projects'
       path: '/projects'
@@ -124,6 +194,20 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integrations': {
+      id: '/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof IntegrationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/flows': {
+      id: '/flows'
+      path: '/flows'
+      fullPath: '/flows'
+      preLoaderRoute: typeof FlowsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$slug': {
@@ -140,14 +224,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$slug/c4': {
+      id: '/$slug/c4'
+      path: '/c4'
+      fullPath: '/$slug/c4'
+      preLoaderRoute: typeof SlugC4RouteImport
+      parentRoute: typeof SlugRoute
+    }
   }
 }
 
+interface SlugRouteChildren {
+  SlugC4Route: typeof SlugC4Route
+}
+
+const SlugRouteChildren: SlugRouteChildren = {
+  SlugC4Route: SlugC4Route,
+}
+
+const SlugRouteWithChildren = SlugRoute._addFileChildren(SlugRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  SlugRoute: SlugRoute,
+  SlugRoute: SlugRouteWithChildren,
+  FlowsRoute: FlowsRoute,
+  IntegrationsRoute: IntegrationsRoute,
   PrivacyRoute: PrivacyRoute,
   ProjectsRoute: ProjectsRoute,
+  ShapesRoute: ShapesRoute,
   TemplatesRoute: TemplatesRoute,
   TermsRoute: TermsRoute,
 }

@@ -17,11 +17,15 @@ import {
   IconLayoutList,
   IconInfoCircle,
   IconFolderPlus,
+  IconSitemap,
+  IconVectorBezier2,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import Container from "#/components/ui/container";
+import { cn } from "../lib/utils";
+import type { ProjectType } from "../store/project.store";
 
 /**
  * Route for the project management dashboard.
@@ -44,11 +48,11 @@ function ProjectsPage() {
 
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
 
-  const handleCreateProject = (name: string, description?: string) => {
-    const newProject = createProject(name, description);
+  const handleCreateProject = (name: string, type: ProjectType, description?: string) => {
+    const newProject = createProject(name, type, description);
     if (!newProject) return;
     setModalOpen(false);
-    navigate({ to: "/" });
+    navigate({ to: "/$slug", params: { slug: newProject.slug } });
   };
 
   const handleDeleteRequest = (p: Project) => {
@@ -159,8 +163,17 @@ function ProjectsPage() {
                   className="group relative flex flex-col gap-4 p-5 bg-card border border-border rounded-xl hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all"
                 >
                   <div className="flex items-start justify-between">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary transition-transform group-hover:scale-110">
-                      <IconFolder size={20} stroke={1.8} />
+                    <div className="flex flex-col gap-1 items-start">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary transition-transform group-hover:scale-110">
+                        <IconFolder size={20} stroke={1.8} />
+                      </div>
+                      <div className={cn(
+                        "mt-2 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider flex items-center gap-1",
+                        p.type === 'c4' ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                      )}>
+                        {p.type === 'c4' ? <IconSitemap size={10} /> : <IconVectorBezier2 size={10} />}
+                        {p.type === 'c4' ? 'C4 Model' : 'Architecture'}
+                      </div>
                     </div>
                     <button
                       onClick={() => handleDeleteRequest(p)}
@@ -206,8 +219,16 @@ function ProjectsPage() {
                   className={`flex items-center justify-between p-4 hover:bg-muted/50 transition-all ${idx !== filtered.length - 1 ? "border-b border-border" : ""}`}
                 >
                   <div className="flex items-center gap-4 flex-1">
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                      <IconFolder size={18} stroke={1.8} />
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <IconFolder size={18} stroke={1.8} />
+                      </div>
+                      <span className={cn(
+                        "px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-tight",
+                        p.type === 'c4' ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                      )}>
+                        {p.type === 'c4' ? 'C4' : 'ARCH'}
+                      </span>
                     </div>
                     <div className="flex flex-col">
                       <h3 className="text-sm font-semibold text-foreground">

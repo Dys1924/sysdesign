@@ -8,18 +8,22 @@ import {
   IconBook,
   IconChevronDown,
   IconDownload,
-  IconFocus2,
+  IconShare,
+  IconLayoutGrid,
+  IconLogout,
+  IconCheck,
+  IconSitemap,
+  IconVectorBezier2,
+  IconQuestionMark,
   IconFolder,
   IconGridDots,
   IconLoader2,
-  IconLogout,
-  IconSitemap,
   IconSquarePlus,
   IconTrash,
   IconUserCircle,
-  IconVectorBezier2,
   IconZoomIn,
   IconZoomOut,
+  IconFocus2,
 } from "@tabler/icons-react";
 import { cn } from "../../lib/utils";
 import { type Template } from "../../data/templates";
@@ -148,7 +152,7 @@ export default function Toolbar() {
 
   return (
     <>
-      <header className="h-12 flex items-center justify-between px-4 border-b bg-card shrink-0 relative z-50">
+      <header className="h-12 flex items-center justify-between px-4 border-b bg-background shrink-0 relative z-50">
         <ConfirmModal
           open={!!templateConfirm}
           title="Load Architecture Template?"
@@ -179,7 +183,7 @@ export default function Toolbar() {
 
           <Link
             to="/projects"
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-muted-background hover:text-foreground hover:bg-muted transition-all select-none"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-[--radius] text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all select-none"
           >
             <IconFolder size={14} stroke={1.8} />
             Projects
@@ -187,7 +191,7 @@ export default function Toolbar() {
 
           <Link
             to="/templates"
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-muted-background hover:text-foreground hover:bg-muted transition-all select-none"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-[--radius] text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all select-none"
           >
             <IconBook size={14} stroke={1.8} className="text-primary" />
             Templates
@@ -208,30 +212,14 @@ export default function Toolbar() {
               {activeProject ? activeProject.name : "Select Project"}
             </Button>
 
-            {/* <Button
-              id="project-btn"
-              variant="ghost"
-              size="sm"
-              onClick={() => setProjectMenuOpen(!projectMenuOpen)}
-              className={`h-7 px-2 gap-1.5 text-[12px] font-semibold border border-transparent hover:border-border transition-all ${activeProject ? "text-foreground bg-primary/5 border-primary/20 hover:bg-primary/10" : "text-muted-foreground"}`}
-            >
-              <span className="max-w-[120px] truncate">
-                {activeProject ? activeProject.name : "Select Project"}
-              </span>
-              <IconChevronDown
-                size={12}
-                className={`transition-transform duration-200 ${projectMenuOpen ? "rotate-180" : ""}`}
-              />
-            </Button> */}
-
             {projectMenuOpen && (
               <div
                 id="project-menu"
                 className="absolute top-[calc(100%+6px)] left-0 z-50 bg-card border border-border
-                           rounded-xl p-1 min-w-[200px] shadow-xl animate-in fade-in slide-in-from-top-1"
+                           rounded-[--radius] p-1 min-w-[200px] shadow-xl animate-in fade-in slide-in-from-top-1"
               >
-                <div className="px-3 py-1.5 border-b border-border/50 mb-1">
-                  <span className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-muted-background hover:text-foreground hover:bg-muted transition-all select-none">
+                <div className="px-3 py-1.5 border-b border-border mb-1">
+                  <span className="flex items-center gap-1.5 px-2 py-1 rounded-[--radius] text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all select-none">
                     Switch Project
                   </span>
                 </div>
@@ -245,7 +233,7 @@ export default function Toolbar() {
                         setProjectMenuOpen(false);
                         navigate({ to: "/$slug", params: { slug: p.slug } });
                       }}
-                      className={`w-full justify-start px-3 py-2 h-auto text-left gap-2 ${p.id === activeProjectId ? "bg-primary/5 text-primary" : ""}`}
+                      className={`w-full justify-start px-3 py-2 h-auto text-left gap-2 rounded-none ${p.id === activeProjectId ? "bg-primary/10 text-primary" : ""}`}
                     >
                       <IconFolder
                         size={14}
@@ -266,17 +254,17 @@ export default function Toolbar() {
                     </Button>
                   ))}
                 </div>
-                <div className="mt-1 pt-1 border-t border-border/50">
+                <div className="mt-1 pt-1 border-t border-border">
                   <Button
                     onClick={() => {
                       setProjectMenuOpen(false);
                       navigate({ to: "/projects" });
                     }}
                     variant="ghost"
-                    className="w-full justify-start px-3 py-2 h-auto text-left gap-2 text-primary hover:bg-primary/5"
+                    className="w-full justify-start px-3 py-2 h-auto text-left gap-2 text-primary hover:bg-primary/5 rounded-none"
                   >
                     <IconSquarePlus size={14} />
-                    <span className="text-[12px] font-semibold">
+                    <span className="text-[12px] font-medium">
                       All Projects
                     </span>
                   </Button>
@@ -302,7 +290,7 @@ export default function Toolbar() {
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 variant="outline"
                 size="icon-sm"
-                className="rounded-full overflow-hidden border-2 border-primary/20 p-0"
+                className="rounded-[--radius] overflow-hidden border border-border p-0"
               >
                 {user.user_metadata?.avatar_url ? (
                   <img
@@ -324,19 +312,19 @@ export default function Toolbar() {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      fill="#4285F4"
+                      fill="currentColor"
                     />
                     <path
                       d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      fill="#34A853"
+                      fill="currentColor"
                     />
                     <path
                       d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.84z"
-                      fill="#FBBC05"
+                      fill="currentColor"
                     />
                     <path
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                      fill="#EA4335"
+                      fill="currentColor"
                     />
                   </svg>
                 }
@@ -349,9 +337,9 @@ export default function Toolbar() {
             )}
 
             {userMenuOpen && user && (
-              <div className="absolute top-[calc(100%+6px)] right-0 z-50 bg-card border border-border rounded-xl p-1 min-w-[200px] shadow-lg">
+              <div className="absolute top-[calc(100%+6px)] right-0 z-50 bg-card border border-border rounded-[--radius] p-1 min-w-[200px] shadow-lg">
                 <div className="px-3 py-2 border-b border-border/50 mb-1">
-                  <p className="text-[12px] font-semibold truncate">
+                  <p className="text-[12px] font-medium truncate">
                     {user.user_metadata?.full_name || "User"}
                   </p>
                   <p className="text-[10px] text-muted-foreground truncate">
@@ -364,7 +352,7 @@ export default function Toolbar() {
                     setUserMenuOpen(false);
                   }}
                   variant="ghost"
-                  className="w-full justify-start text-destructive px-3 py-2 h-auto"
+                  className="w-full justify-start text-destructive px-3 py-2 h-auto rounded-none"
                 >
                   <IconLogout size={14} className="mr-2" />
                   <span className="text-[12.5px] font-medium">Logout</span>
@@ -378,40 +366,15 @@ export default function Toolbar() {
       {/* Floating Bottom Toolbar — Design System Center Dock */}
       {isCanvasRoute && (
         <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="flex items-center gap-1.5 p-1.5 bg-card backdrop-blur-xl border rounded-sm">
-            {/* Mode Segmented Controls */}
-            <div className="flex items-center bg-muted p-0.5 rounded-md border">
-              <Button
-                onClick={() => setDiagramMode("architecture")}
-                // icon={IconVectorBezier2}
-                // iconSide="left"
-                variant={diagramMode === "architecture" ? "default" : "ghost"}
-                className={"text-xs font-medium rounded-l-md w-16"}
-              >
-                Design
-              </Button>
-
-              <Button
-                onClick={() => setDiagramMode("c4")}
-                // icon={IconSitemap}
-                // iconSide="left"
-                variant={diagramMode === "c4" ? "default" : "ghost"}
-                className={"text-xs font-medium rounded-r-md w-16"}
-              >
-                C4
-              </Button>
-            </div>
-
-            <div className="w-px h-6 bg-border/40 mx-0.5" />
-
+          <div className="flex items-center gap-1 p-1 bg-card border rounded-[--radius] shadow-xl">
             {/* History Dock */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               <Button
                 onClick={undo}
                 disabled={!canUndo}
                 variant="ghost"
                 size="icon-sm"
-                className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors disabled:opacity-30"
+                className="h-9 w-9 rounded-[--radius] hover:bg-muted transition-colors disabled:opacity-30"
                 title="Undo (⌘Z)"
               >
                 <IconArrowBackUp size={18} stroke={1.5} />
@@ -421,22 +384,22 @@ export default function Toolbar() {
                 disabled={!canRedo}
                 variant="ghost"
                 size="icon-sm"
-                className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors disabled:opacity-30"
+                className="h-9 w-9 rounded-[--radius] hover:bg-muted transition-colors disabled:opacity-30"
                 title="Redo (⌘Y)"
               >
                 <IconArrowForwardUp size={18} stroke={1.5} />
               </Button>
             </div>
 
-            <div className="w-px h-6 bg-border/40 mx-0.5" />
+            <div className="w-px h-6 bg-border mx-1" />
 
             {/* Navigation Dock */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               <Button
                 onClick={() => zoomIn()}
                 variant="ghost"
                 size="icon-sm"
-                className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors"
+                className="h-9 w-9 rounded-[--radius] hover:bg-muted transition-colors"
                 title="Zoom In (+)"
               >
                 <IconZoomIn size={18} stroke={1.5} />
@@ -445,7 +408,7 @@ export default function Toolbar() {
                 onClick={() => zoomOut()}
                 variant="ghost"
                 size="icon-sm"
-                className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors"
+                className="h-9 w-9 rounded-[--radius] hover:bg-muted transition-colors"
                 title="Zoom Out (-)"
               >
                 <IconZoomOut size={18} stroke={1.5} />
@@ -454,14 +417,14 @@ export default function Toolbar() {
                 onClick={() => fitView({ duration: 450 })}
                 variant="ghost"
                 size="icon-sm"
-                className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors"
+                className="h-9 w-9 rounded-[--radius] hover:bg-muted transition-colors"
                 title="Fit to Canvas"
               >
                 <IconFocus2 size={18} stroke={1.5} />
               </Button>
             </div>
 
-            <div className="w-px h-6 bg-border/40 mx-0.5" />
+            <div className="w-px h-6 bg-border mx-1" />
 
             {/* Utility Actions */}
             <div className="flex items-center gap-1">
@@ -472,18 +435,6 @@ export default function Toolbar() {
                 loading={loading}
               />
 
-              {/* <Button
-                onClick={() => groupSelected()}
-                disabled={!hasSelection}
-                icon={IconSquarePlus}
-                loading={loading}
-                iconSide="left"
-                variant="outline"
-                size="sm"
-              >
-                Group
-              </Button> */}
-
               <Button
                 onClick={() => setClearConfirmOpen(true)}
                 disabled={!hasNodes}
@@ -492,13 +443,13 @@ export default function Toolbar() {
                 iconSide="left"
                 variant="destructive"
                 size="sm"
-                className={"text-destructive hover:bg-destructive/10"}
+                className={"text-destructive hover:bg-destructive/10 border-transparent hover:border-destructive/20"}
               >
                 Clear
               </Button>
             </div>
 
-            <div className="w-px h-6 bg-border/40 mx-0.5" />
+            <div className="w-px h-6 bg-border mx-1" />
 
             {/* Primary Action: Export */}
             <div ref={menuRef} className="relative">
@@ -515,9 +466,9 @@ export default function Toolbar() {
               </Button>
 
               {exportOpen && (
-                <div className="absolute bottom-[calc(100%+16px)] right-0 z-50 bg-card/95 backdrop-blur-2xl border border-border/80 rounded-2xl p-1.5 min-w-[220px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <div className="px-3.5 py-2 border-b border-border/40 mb-1.5">
-                    <span className="flex items-center text-primary-500 gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-muted-background hover:text-foreground hover:bg-muted transition-all select-none">
+                <div className="absolute bottom-[calc(100%+12px)] right-0 z-50 bg-card border border-border rounded-[--radius] p-1 min-w-[200px] shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="px-3 py-1.5 border-b border-border/50 mb-1">
+                    <span className="flex items-center gap-1.5 px-2 py-1 rounded-[--radius] text-xs font-medium text-muted-foreground select-none">
                       Select Format
                     </span>
                   </div>
@@ -527,12 +478,12 @@ export default function Toolbar() {
                         key={opt.key}
                         onClick={() => handleExport(opt.key)}
                         variant="ghost"
-                        className="w-full flex-col items-start px-3.5 py-2.5 h-auto text-left rounded-xl hover:bg-primary/5 group"
+                        className="w-full flex-col items-start px-3 py-2 h-auto text-left rounded-none hover:bg-muted"
                       >
-                        <span className="flex items-center gap-1.5 rounded-md text-xs font-medium text-muted-background hover:text-foreground transition-all select-none">
+                        <span className="flex items-center gap-1.5 text-xs font-medium text-foreground transition-all select-none">
                           {opt.label}
                         </span>
-                        <span className="text-[10px] text-muted-foreground font-medium opacity-80">
+                        <span className="text-[10px] text-muted-foreground font-medium">
                           {opt.desc}
                         </span>
                       </Button>

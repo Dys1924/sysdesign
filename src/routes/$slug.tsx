@@ -9,6 +9,8 @@ import {
 } from "../store/project.store";
 import ProjectSetupPopup from "../components/dashboard/ProjectSetupPopup";
 import Container from "#/components/ui/container";
+import type { ProjectType } from "../store/project.store";
+import { setDiagramMode } from "../store/canvas.store";
 
 /**
  * Dynamic route for individual project canvases, identified by their slug.
@@ -32,15 +34,21 @@ function SlugPage() {
 
   // Sync active project state based on URL slug
   useEffect(() => {
-    if (project && project.id !== activeProjectId) {
-      setActiveProject(project.id);
-    } else if (!project && projects.length > 0) {
-      // If slug is invalid but we have projects, maybe redirect to home?
+    if (project) {
+      if (project.id !== activeProjectId) {
+        setActiveProject(project.id);
+      }
+      // If it's a C4 project but we are on the base route, redirect to C4 route
+      if (project.type === "c4") {
+        navigate({ to: "/$slug/c4", params: { slug: project.slug } as any });
+      } else {
+        setDiagramMode("architecture");
+      }
     }
   }, [project, activeProjectId, projects.length]);
 
-  const handleCreateProject = (name: string, description?: string) => {
-    const newProject = createProject(name, description);
+  const handleCreateProject = (name: string, type: ProjectType, description?: string) => {
+    const newProject = createProject(name, type, description);
     if (!newProject) return;
     setModalOpen(false);
     navigate({ to: "/$slug", params: { slug: newProject.slug } });

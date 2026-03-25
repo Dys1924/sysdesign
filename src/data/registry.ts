@@ -292,25 +292,25 @@ export const REGISTRY: NodeTemplate[] = [
   { subtype: 'sh-flow-plus', label: 'Summing', category: 'shape', icon: 'IconCirclePlus', description: 'Summing junction' },
   { subtype: 'sh-flow-cross', label: 'Cancel', category: 'shape', icon: 'IconCircleX', description: 'Wait or cancel state' },
 
-  // C4 Model - Level 1: Context
-  { subtype: 'c4-person', label: 'Person', category: 'c4', icon: 'IconUser', description: 'A user, customer, or actor' },
-  { subtype: 'c4-system', label: 'Software System', category: 'c4', icon: 'IconBox', description: 'The software system being modeled' },
-  { subtype: 'c4-external-system', label: 'External System', category: 'c4', icon: 'IconBox', description: 'Third-party or external software system' },
+  // C4 Model — 4 core abstractions
+  // Users rename/describe these to fit any system.
+  { subtype: 'c4-person',    label: 'Person',    category: 'c4', icon: 'IconUser',    description: 'An end user, customer, or actor' },
+  { subtype: 'c4-system',    label: 'System',    category: 'c4', icon: 'IconBox',     description: 'The software system being modelled' },
+  { subtype: 'c4-container', label: 'Container', category: 'c4', icon: 'IconStack2',  description: 'An app, service, DB, or deployable unit' },
+  { subtype: 'c4-component', label: 'Component', category: 'c4', icon: 'IconPuzzle',  description: 'A building block inside a container' },
 
-  // C4 Model - Level 2: Containers
-  { subtype: 'c4-web-app', label: 'Web Application', category: 'c4', icon: 'IconBrowser', description: 'Web-based user interface' },
-  { subtype: 'c4-mobile-app', label: 'Mobile App', category: 'c4', icon: 'IconDeviceMobile', description: 'Native mobile application' },
-  { subtype: 'c4-api', label: 'API Application', category: 'c4', icon: 'IconApi', description: 'Backend API or service' },
-  { subtype: 'c4-database', label: 'Database Service', category: 'c4', icon: 'IconDatabase', description: 'Data storage container' },
-  { subtype: 'c4-message-bus', label: 'Message Bus', category: 'c4', icon: 'IconStack2', description: 'Message broker or event hub' },
-  { subtype: 'c4-microservice', label: 'Microservice', category: 'c4', icon: 'IconBox', description: 'Independent service container' },
-  { subtype: 'c4-serverless', label: 'Serverless Function', category: 'c4', icon: 'IconBolt', description: 'Lambda / Serverless compute' },
-
-  // C4 Model - Level 3: Components
-  { subtype: 'c4-component', label: 'Code Component', category: 'c4', icon: 'IconPuzzle', description: 'Generic code component' },
-  { subtype: 'c4-controller', label: 'API Controller', category: 'c4', icon: 'IconBoxPadding', description: 'Handles incoming requests' },
-  { subtype: 'c4-service', label: 'Business Service', category: 'c4', icon: 'IconBox', description: 'Encapsulates business logic' },
-  { subtype: 'c4-repository', label: 'Data Repository', category: 'c4', icon: 'IconHdd', description: 'Handles data access' },
-  { subtype: 'c4-gateway', label: 'External Gateway', category: 'c4', icon: 'IconCloudUp', description: 'Integrates with external APIs' }
+  // Legacy C4 subtypes — kept for backward compatibility with existing diagrams
+  { subtype: 'c4-external-system', label: 'External System',     category: 'c4', icon: 'IconBox',           description: 'Third-party or external software system' },
+  { subtype: 'c4-web-app',         label: 'Web Application',     category: 'c4', icon: 'IconBrowser',       description: 'Browser-based user interface' },
+  { subtype: 'c4-mobile-app',      label: 'Mobile App',          category: 'c4', icon: 'IconDeviceMobile',  description: 'Native mobile application' },
+  { subtype: 'c4-api',             label: 'API Application',     category: 'c4', icon: 'IconApi',           description: 'Backend REST/gRPC API' },
+  { subtype: 'c4-database',        label: 'Database',            category: 'c4', icon: 'IconDatabase',      description: 'Data storage container' },
+  { subtype: 'c4-message-bus',     label: 'Message Bus',         category: 'c4', icon: 'IconStack2',        description: 'Async message broker / event hub' },
+  { subtype: 'c4-microservice',    label: 'Microservice',        category: 'c4', icon: 'IconBox',           description: 'Independently deployable service' },
+  { subtype: 'c4-serverless',      label: 'Serverless Function', category: 'c4', icon: 'IconBolt',          description: 'Lambda or serverless compute unit' },
+  { subtype: 'c4-controller',      label: 'Controller',          category: 'c4', icon: 'IconBoxPadding',    description: 'Handles and routes incoming requests' },
+  { subtype: 'c4-service',         label: 'Business Service',    category: 'c4', icon: 'IconBox',           description: 'Encapsulates business logic' },
+  { subtype: 'c4-repository',      label: 'Repository',          category: 'c4', icon: 'IconHdd',           description: 'Provides data-access abstraction' },
+  { subtype: 'c4-gateway',         label: 'External Gateway',    category: 'c4', icon: 'IconCloudUp',       description: 'Integrates with an external API' },
 ]
 

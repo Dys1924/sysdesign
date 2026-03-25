@@ -7,6 +7,8 @@ import type { User, Session } from "@supabase/supabase-js";
 /**
  * Represents a user-created diagram project.
  */
+export type ProjectType = "design" | "c4";
+
 export interface Project {
   /** Unique project identifier */
   id: string;
@@ -14,6 +16,8 @@ export interface Project {
   slug: string;
   /** Human-readable project name */
   name: string;
+  /** Project type: design or c4 */
+  type: ProjectType;
   /** Optional detailed description */
   description?: string;
   /** Unix timestamp of creation */
@@ -97,10 +101,11 @@ function slugify(text: string): string {
 /**
  * Creates a new project and persists it to the appropriate storage (Local or Supabase).
  * @param name - The name of the new project
+ * @param type - The type of the project (design or c4)
  * @param description - Optional description for the project
  * @returns The newly created project object, or null if the project limit is reached
  */
-export function createProject(name: string, description?: string) {
+export function createProject(name: string, type: ProjectType = "design", description?: string) {
   if (projectStore.state.projects.length >= MAX_PROJECTS) {
     return null;
   }
@@ -109,6 +114,7 @@ export function createProject(name: string, description?: string) {
     id: uuidv4(),
     slug: slugify(name),
     name,
+    type,
     description,
     createdAt: Date.now(),
     updatedAt: Date.now(),
@@ -132,6 +138,7 @@ export function createProject(name: string, description?: string) {
           user_id: s.user.id,
           name: newProject.name,
           slug: newProject.slug,
+          type: newProject.type,
           description: newProject.description,
           created_at: new Date(newProject.createdAt).toISOString(),
           updated_at: new Date(newProject.updatedAt).toISOString(),
@@ -247,7 +254,7 @@ async function syncFromSupabase() {
   const user = projectStore.state.user;
   const { data: projects, error } = await supabase
     .from("projects")
-    .select("id, slug, name, description, created_at, updated_at")
+    .select("id, slug, name, type, description, created_at, updated_at")
     .order("updated_at", { ascending: false });
 
   if (error) {
@@ -259,6 +266,7 @@ async function syncFromSupabase() {
     id: p.id,
     slug: p.slug,
     name: p.name,
+    type: (p.type as ProjectType) ?? "design",
     description: p.description,
     createdAt: new Date(p.created_at).getTime(),
     updatedAt: new Date(p.updated_at).getTime(),
@@ -273,7 +281,7 @@ async function syncFromSupabase() {
     // Refresh the list after migration
     const { data: refreshed } = await supabase
       .from("projects")
-      .select("id, slug, name, description, created_at, updated_at")
+      .select("id, slug, name, type, description, created_at, updated_at")
       .order("updated_at", { ascending: false });
 
     if (refreshed) {
@@ -283,6 +291,7 @@ async function syncFromSupabase() {
           id: p.id,
           slug: p.slug,
           name: p.name,
+          type: (p.type as ProjectType) ?? "design",
           description: p.description,
           createdAt: new Date(p.created_at).getTime(),
           updatedAt: new Date(p.updated_at).getTime(),

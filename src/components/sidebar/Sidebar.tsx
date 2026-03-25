@@ -6,6 +6,7 @@ import {
   type NodeCategory,
   type NodeTemplate,
 } from "../../types/diagram";
+
 import { useProjectStore } from "../../store/project.store";
 import { useCanvasStore } from "../../store/canvas.store";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useNavigate } from "@tanstack/react-router";
+import ConfirmModal from "../ui/ConfirmModal";
+import { setDiagramMode, clearCanvas } from "../../store/canvas.store";
 
 type TablerIcon = React.FC<{
   size?: number;
@@ -74,20 +78,19 @@ function NodeItem({
       draggable
       onDragStart={onDragStart}
       className={cn(
-        "flex items-center gap-2.5 px-3 py-2 mx-1.5 rounded-lg cursor-grab select-none transition-colors duration-100 group",
+        "flex items-center gap-2.5 px-3 py-2 mx-1.5 rounded-[--radius] cursor-grab select-none transition-colors duration-100 group",
         disabled
           ? "opacity-40 cursor-not-allowed filter grayscale-[0.5]"
           : "hover:bg-muted",
       )}
     >
       <div
-        className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 shadow-xs"
+        className="w-7 h-7 rounded-[--radius] flex items-center justify-center shrink-0 border border-border"
         style={{
-          background: `color-mix(in srgb, ${style.color} 15%, var(--card))`,
-          border: `1px solid color-mix(in srgb, ${style.color} 20%, transparent)`,
+          background: `color-mix(in srgb, ${style.color} 10%, var(--card))`,
         }}
       >
-        {Icon && <Icon size={14} stroke={1.8} color={style.color} />}
+        {Icon && <Icon size={14} stroke={1.5} color={style.color} />}
       </div>
       <div className="min-w-0">
         <div className="text-[12px] font-medium text-foreground leading-tight truncate">
@@ -104,54 +107,11 @@ function NodeItem({
 /**
  * Compact version of NodeItem for the shapes grid.
  */
-function ShapeItem({
-  template,
-  disabled = false,
-}: {
-  template: NodeTemplate;
-  disabled?: boolean;
-}) {
-  const Icon = getIcon(template.icon);
 
-  const onDragStart = (e: React.DragEvent) => {
-    if (disabled) {
-      e.preventDefault();
-      return;
-    }
-    e.dataTransfer.setData("application/sysdesign", JSON.stringify(template));
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  return (
-    <Tooltip>
-      <TooltipTrigger>
-        <div
-          draggable
-          onDragStart={onDragStart}
-          className={cn(
-            "w-[42px] h-[40px] rounded-md flex items-center justify-center border border-border/40 hover:bg-muted hover:border-primary/40 transition-all cursor-grab active:cursor-grabbing group",
-            disabled && "opacity-30 cursor-not-allowed",
-          )}
-        >
-          <Icon
-            size={20}
-            stroke={1.2}
-            className="text-foreground/70 group-hover:text-primary transition-colors"
-          />
-        </div>
-      </TooltipTrigger>
-      <TooltipContent
-        side="bottom"
-        className="text-[10px] py-1 px-2 font-medium bg-popover/90 backdrop-blur-sm"
-      >
-        {template.label}
-      </TooltipContent>
-    </Tooltip>
-  );
-}
 
 type TabId =
   | "components"
+  | "c4"
   | "templates"
   | "integrations"
   | "flows"
@@ -163,10 +123,18 @@ type TabId =
  * Organized by category with support for custom node creation.
  */
 export default function Sidebar() {
+  const navigate = useNavigate();
   const activeProjectId = useProjectStore((s) => s.activeProjectId);
+  const projects = useProjectStore((s) => s.projects);
+  const activeProject = projects.find((p) => p.id === activeProjectId);
+  
   const diagramMode = useCanvasStore((s) => s.diagramMode);
-  const [activeTab, setActiveTab] = React.useState<TabId>("components");
+  
+  const [activeTab, setActiveTab] = React.useState<TabId>(
+    activeProject?.type === "c4" ? "c4" : "components"
+  );
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [showConfirm, setShowConfirm] = React.useState<TabId | null>(null);
 
   const [expanded, setExpanded] = React.useState<Record<NodeCategory, boolean>>(
     {
@@ -225,19 +193,39 @@ export default function Sidebar() {
       <TooltipTrigger>
         <button
           onClick={() => {
+            if (id === 'integrations') {
+              navigate({ to: '/integrations' });
+              return;
+            }
+            if (id === 'flows') {
+              navigate({ to: '/flows' });
+              return;
+            }
+            if (id === 'shapes') {
+              navigate({ to: '/shapes' });
+              return;
+            }
+
             setActiveTab(id);
+            if (id === 'c4') {
+              setDiagramMode('c4');
+              if (activeProject) navigate({ to: '/$slug/c4', params: { slug: activeProject.slug } as any });
+            } else if (id === 'components') {
+              setDiagramMode('architecture');
+              if (activeProject) navigate({ to: '/$slug', params: { slug: activeProject.slug } as any });
+            }
             if (isCollapsed) setIsCollapsed(false);
           }}
           className={cn(
-            "group relative flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200",
-            activeTab === id && !isCollapsed
+            "group relative flex h-10 w-10 items-center justify-center rounded-[--radius] transition-all duration-200",
+            (activeTab === id || (id === 'c4' && diagramMode === 'c4' && activeTab === 'c4') || (id === 'components' && diagramMode === 'architecture' && activeTab === 'components')) && !isCollapsed
               ? "bg-primary/10 text-primary shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]"
               : "text-muted-foreground hover:bg-muted hover:text-foreground",
           )}
         >
           <Icon size={20} stroke={1.5} />
           {activeTab === id && !isCollapsed && (
-            <div className="absolute left-0 h-5 w-0.5 rounded-full bg-primary" />
+            <div className="absolute left-0 h-5 w-0.5 rounded-none bg-primary" />
           )}
         </button>
       </TooltipTrigger>
@@ -256,8 +244,13 @@ export default function Sidebar() {
       <div className="flex flex-col items-center py-4 w-[52px] border-r border-border/50 bg-muted/30 gap-2 shrink-0">
         <RailIcon
           id="components"
-          icon={TablerIcons.IconGrid4x4}
-          label="Components"
+          icon={TablerIcons.IconVectorBezier2}
+          label="Architecture"
+        />
+        <RailIcon
+          id="c4"
+          icon={TablerIcons.IconSitemap}
+          label="C4 Model"
         />
         <RailIcon id="templates" icon={TablerIcons.IconSparkles} label="AI" />
         <RailIcon
@@ -315,16 +308,12 @@ export default function Sidebar() {
           <div className="flex items-center justify-between mb-3 whitespace-nowrap">
             <h2 className="text-[13px] font-bold text-foreground tracking-tight">
               {activeTab === "components"
-                ? "Components"
-                : activeTab === "templates"
+                ? "Architecture"
+                : activeTab === "c4"
+                  ? "C4 Model"
+                  : activeTab === "templates"
                   ? "AI"
-                  : activeTab === "integrations"
-                    ? "Integrations"
-                    : activeTab === "flows"
-                      ? "Flows"
-                      : activeTab === "shapes"
-                        ? "Shapes"
-                        : "Settings"}
+                  : "Settings"}
             </h2>
             <div className="flex gap-1">
               <button className="p-1 rounded-md hover:bg-muted text-muted-foreground">
@@ -336,112 +325,132 @@ export default function Sidebar() {
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto py-2 px-1 custom-scrollbar">
-          {activeTab === "components" && (
-            <>
-              {diagramMode === "c4" ? (
-                /* C4 Mode Palette */
-                <div className="flex flex-col gap-2 py-2">
-                  {[
-                    {
-                      label: "Level 1: System Context",
-                      filter: (n: any) =>
-                        n.subtype.startsWith("c4-person") ||
-                        n.subtype === "c4-system" ||
-                        n.subtype === "c4-external-system",
-                    },
-                    {
-                      label: "Level 2: Containers",
-                      filter: (n: any) =>
-                        [
-                          "c4-web-app",
-                          "c4-mobile-app",
-                          "c4-api",
-                          "c4-database",
-                          "c4-message-bus",
-                          "c4-microservice",
-                          "c4-serverless",
-                        ].includes(n.subtype),
-                    },
-                    {
-                      label: "Level 3: Components",
-                      filter: (n: any) =>
-                        [
-                          "c4-component",
-                          "c4-controller",
-                          "c4-service",
-                          "c4-repository",
-                          "c4-gateway",
-                        ].includes(n.subtype),
-                    },
-                  ].map((section) => (
-                    <div
-                      key={section.label}
-                      className="px-3 pb-3 border-b border-border/40 last:border-0"
-                    >
-                      <h2 className="text-xs font-bold mb-3 block">
-                        {section.label}
-                      </h2>
+          {activeTab === "c4" && (() => {
+            const C4_ABSTRACTIONS = [
+              { subtype: "c4-person",    label: "Person",    icon: "IconUser",   color: "#3B82F6", pill: "#DBEAFE", textColor: "#1E40AF", description: "An end user, customer or actor" },
+              { subtype: "c4-system",    label: "System",    icon: "IconBox",    color: "#1168BD", pill: "#BBDEFB", textColor: "#0B4D8C", description: "A software system (internal or external)" },
+              { subtype: "c4-container", label: "Container", icon: "IconStack2", color: "#16A34A", pill: "#DCFCE7", textColor: "#14532D", description: "An app, service, DB or deployable unit" },
+              { subtype: "c4-component", label: "Component", icon: "IconPuzzle", color: "#EA580C", pill: "#FFEDD5", textColor: "#7C2D12", description: "A building block inside a container" },
+            ];
 
-                      <div className="flex flex-wrap gap-2">
-                        {grouped.c4.filter(section.filter).map((t) => (
-                          <NodeItem
-                            key={t.subtype}
-                            template={t}
-                            disabled={!activeProjectId}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+            return (
+              <div className="flex flex-col py-2">
+                {/* Tip */}
+                <div className="px-3 pb-3">
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    Drag any abstraction onto the canvas, then double-click to name it.
+                    Group items together to create system or container boundaries.
+                  </p>
                 </div>
-              ) : (
-                /* Standard Mode Palette */
-                CATEGORY_ORDER.map((cat) => {
-                  if (cat === "c4") return null;
-                  const style = CATEGORY_STYLE[cat];
-                  const items = grouped[cat];
-                  const isExpanded = expanded[cat];
-                  if (items.length === 0) return null;
 
-                  return (
-                    <div key={cat} className="mb-0.5">
-                      <button
-                        onClick={() => toggleCategory(cat)}
-                        className="w-full flex items-center justify-between px-3 py-1.5 hover:bg-muted/50 transition-colors group/row"
+                {/* 4 core abstractions */}
+                <div className="space-y-0.5 px-1">
+                  {C4_ABSTRACTIONS.map((a) => {
+                    const Icon = getIcon(a.icon) as any;
+                    const template = {
+                      subtype: a.subtype,
+                      label: a.label,
+                      category: "c4" as const,
+                      icon: a.icon,
+                      description: a.description,
+                    };
+                    return (
+                      <div
+                        key={a.subtype}
+                        draggable
+                        onDragStart={(e) => {
+                          if (!activeProjectId) { e.preventDefault(); return; }
+                          e.dataTransfer.setData("application/sysdesign", JSON.stringify(template));
+                          e.dataTransfer.effectAllowed = "move";
+                        }}
+                        className={cn(
+                          "flex items-center gap-2.5 px-3 py-2 mx-0.5 rounded-lg cursor-grab select-none transition-colors duration-100",
+                          !activeProjectId ? "opacity-40 cursor-not-allowed grayscale-[0.5]" : "hover:bg-muted",
+                        )}
                       >
-                        <div className="flex items-center gap-2">
-                          <TablerIcons.IconChevronRight
-                            size={12}
-                            className={cn(
-                              "text-muted-foreground/50 transition-transform duration-200",
-                              isExpanded && "rotate-90 text-foreground",
-                            )}
-                          />
-                          <h6 className="text-sm font-semibold text-foreground/85 group-hover/row:text-foreground">
-                            {style.label}
-                          </h6>
+                        <div
+                          className={cn(
+                            "w-7 h-7 rounded-md flex items-center justify-center shrink-0 shadow-xs",
+                            a.subtype === "c4-person" && "rounded-full",
+                          )}
+                          style={{ background: a.pill, color: a.color }}
+                        >
+                          <Icon size={14} stroke={1.8} color={a.color} />
                         </div>
-                        <span className="text-[9px] font-medium text-muted-foreground/60 bg-muted/80 px-1.5 py-0.5 rounded-sm">
-                          {items.length}
-                        </span>
-                      </button>
+                        <div className="min-w-0">
+                          <div className="text-[12px] font-medium text-foreground leading-tight truncate">
+                            {a.label}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground leading-tight truncate">
+                            {a.description}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
 
-                      {isExpanded && (
-                        <div className="px-3 py-1 flex flex-wrap gap-2">
-                          {items.map((t) => (
-                            <NodeItem
-                              key={t.subtype}
-                              template={t}
-                              disabled={!activeProjectId}
-                            />
-                          ))}
-                        </div>
-                      )}
+                {/* Grouping hint */}
+                <div className="mx-3 mt-4 py-2.5 px-3 bg-muted/40 rounded-lg border border-border/30">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <TablerIcons.IconSelect size={12} className="text-muted-foreground shrink-0" />
+                    <span className="text-[10px] font-semibold text-foreground/80">Boundaries</span>
+                  </div>
+                  <p className="text-[9px] text-muted-foreground leading-relaxed">
+                    Drag-select multiple nodes on the canvas to auto-group them into a boundary box.
+                    Double-click the group label to rename it (e.g. "Internet Banking System").
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
+
+
+          {activeTab === "components" && (
+            CATEGORY_ORDER.map((cat) => {
+              if (cat === "c4") return null;
+              const style = CATEGORY_STYLE[cat];
+              const items = grouped[cat];
+              const isExpanded = expanded[cat];
+              if (items.length === 0) return null;
+
+              return (
+                <div key={cat} className="mb-0.5">
+                  <button
+                    onClick={() => toggleCategory(cat)}
+                    className="w-full flex items-center justify-between px-3 py-1.5 hover:bg-muted/50 transition-colors group/row"
+                  >
+                    <div className="flex items-center gap-2">
+                      <TablerIcons.IconChevronRight
+                        size={12}
+                        className={cn(
+                          "text-muted-foreground/50 transition-transform duration-200",
+                          isExpanded && "rotate-90 text-foreground",
+                        )}
+                      />
+                      <h6 className="text-sm font-semibold text-foreground/85 group-hover/row:text-foreground">
+                        {style.label}
+                      </h6>
                     </div>
-                  );
-                })
-              )}
-            </>
+                    <span className="text-[9px] font-medium text-muted-foreground/60 bg-muted/80 px-1.5 py-0.5 rounded-sm">
+                      {items.length}
+                    </span>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="px-3 py-1 flex flex-wrap gap-2">
+                      {items.map((t) => (
+                        <NodeItem
+                          key={t.subtype}
+                          template={t}
+                          disabled={!activeProjectId}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })
           )}
 
           {activeTab === "templates" && (
@@ -452,132 +461,6 @@ export default function Sidebar() {
                 className="mb-2 opacity-20"
               />
               <p className="text-[11px]">No templates found</p>
-            </div>
-          )}
-
-          {activeTab === "integrations" && (
-            <div className="px-4 py-8 text-center flex flex-col items-center text-muted-foreground">
-              <TablerIcons.IconPuzzle
-                size={24}
-                stroke={1}
-                className="mb-2 opacity-20"
-              />
-              <p className="text-[11px]">No integrations configured</p>
-            </div>
-          )}
-
-          {activeTab === "flows" && (
-            <div className="py-2">
-              <div className="px-4 mb-3">
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-3 whitespace-nowrap">
-                  ER Diagrams
-                </h3>
-                <div className="space-y-1">
-                  {grouped.flow
-                    .filter(
-                      (t) =>
-                        t.subtype.startsWith("flow-") &&
-                        ![
-                          "actor",
-                          "participant",
-                          "api-call",
-                          "auth-flow",
-                          "event",
-                          "db-op",
-                        ].some((s) => t.subtype.includes(s)),
-                    )
-                    .map((t) => (
-                      <NodeItem
-                        key={t.subtype}
-                        template={t}
-                        disabled={!activeProjectId}
-                      />
-                    ))}
-                </div>
-              </div>
-              <div className="px-4 mt-6 mb-3">
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-3 whitespace-nowrap">
-                  Sequence Diagrams
-                </h3>
-                <div className="space-y-1">
-                  {grouped.flow
-                    .filter((t) =>
-                      [
-                        "actor",
-                        "participant",
-                        "api-call",
-                        "auth-flow",
-                        "event",
-                        "db-op",
-                      ].some((s) => t.subtype.includes(s)),
-                    )
-                    .map((t) => (
-                      <NodeItem
-                        key={t.subtype}
-                        template={t}
-                        disabled={!activeProjectId}
-                      />
-                    ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "shapes" && (
-            <div className="py-2 px-3">
-              {/* Standard Shapes */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-3 px-1 whitespace-nowrap">
-                  <h3 className="text-[12px] font-bold text-foreground">
-                    Standard
-                  </h3>
-                  <div className="flex gap-2 text-muted-foreground/40">
-                    <TablerIcons.IconStar size={14} />
-                    <TablerIcons.IconTrash size={14} />
-                    <TablerIcons.IconChevronUp size={14} />
-                  </div>
-                </div>
-                <div className="grid grid-cols-5 gap-1.5 justify-items-center">
-                  {grouped.shape
-                    .filter(
-                      (t) =>
-                        t.subtype.startsWith("sh-") &&
-                        !t.subtype.includes("flow"),
-                    )
-                    .map((t) => (
-                      <ShapeItem
-                        key={t.subtype}
-                        template={t}
-                        disabled={!activeProjectId}
-                      />
-                    ))}
-                </div>
-              </div>
-
-              {/* Flowchart Shapes */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-3 px-1 whitespace-nowrap">
-                  <h3 className="text-[12px] font-bold text-foreground">
-                    Flowchart
-                  </h3>
-                  <div className="flex gap-2 text-muted-foreground/40">
-                    <TablerIcons.IconStar size={14} />
-                    <TablerIcons.IconTrash size={14} />
-                    <TablerIcons.IconChevronUp size={14} />
-                  </div>
-                </div>
-                <div className="grid grid-cols-5 gap-1.5 justify-items-center">
-                  {grouped.shape
-                    .filter((t) => t.subtype.includes("flow"))
-                    .map((t) => (
-                      <ShapeItem
-                        key={t.subtype}
-                        template={t}
-                        disabled={!activeProjectId}
-                      />
-                    ))}
-                </div>
-              </div>
             </div>
           )}
         </div>
@@ -622,6 +505,29 @@ export default function Sidebar() {
           </div>
         ) : null}
       </aside>
+
+      {/* Confirmation Modal for Clearing Canvas */}
+      <ConfirmModal
+        open={!!showConfirm}
+        isDestructive
+        title="Clear Canvas?"
+        description={`Switching to ${showConfirm === "c4" ? "C4 Model" : "Architecture"} mode will clear your current canvas. You cannot mix these two types of diagrams.`}
+        confirmText="Clear & Switch"
+        onClose={() => setShowConfirm(null)}
+        onConfirm={() => {
+          if (showConfirm) {
+            clearCanvas();
+            setDiagramMode(showConfirm === "c4" ? "c4" : "architecture");
+            setActiveTab(showConfirm);
+            if (showConfirm === "c4") {
+              if (activeProject) navigate({ to: '/$slug/c4', params: { slug: activeProject.slug } as any });
+            } else {
+              if (activeProject) navigate({ to: '/$slug', params: { slug: activeProject.slug } as any });
+            }
+            setShowConfirm(null);
+          }
+        }}
+      />
     </div>
   );
 }
