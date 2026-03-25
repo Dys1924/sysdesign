@@ -42,6 +42,8 @@ export interface CanvasState {
   snapToGrid: boolean
   /** The ID of the node currently in editing mode */
   editingNodeId: string | null
+  /** The current diagramming mode (affects palette and styles) */
+  diagramMode: 'architecture' | 'c4'
 }
 
 const DEFAULT_CANVAS_STATE: CanvasState = {
@@ -52,6 +54,7 @@ const DEFAULT_CANVAS_STATE: CanvasState = {
   historyIndex: 0,
   snapToGrid: false,
   editingNodeId: null,
+  diagramMode: 'architecture',
 }
 
 async function load(): Promise<Partial<CanvasState>> {
@@ -204,6 +207,7 @@ export function applyEdgeChangesToStore(changes: EdgeChange[]) {
  */
 export function connectNodes(connection: Connection) {
   canvasStore.setState((s) => {
+    const isC4 = s.diagramMode === 'c4'
     const edge: DiagramEdge = {
       id: `e-${s.edgeCounter + 1}`,
       source: connection.source,
@@ -211,6 +215,8 @@ export function connectNodes(connection: Connection) {
       sourceHandle: connection.sourceHandle ?? undefined,
       targetHandle: connection.targetHandle ?? undefined,
       type: 'smoothstep',
+      label: isC4 ? 'Uses' : undefined,
+      data: isC4 ? { label: 'Uses' } : {},
       style: { stroke: 'var(--border)', strokeWidth: 1.5 },
       markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--border)' },
     }
@@ -448,6 +454,14 @@ export function groupSelected(explicitNodes?: any[]) {
  */
 export function setEditingNodeId(id: string | null) {
   canvasStore.setState((s) => ({ ...s, editingNodeId: id }));
+}
+
+/**
+ * Sets the current diagramming mode.
+ * @param mode - 'architecture' | 'c4'
+ */
+export function setDiagramMode(mode: 'architecture' | 'c4') {
+  canvasStore.setState((s) => ({ ...s, diagramMode: mode }));
 }
 
 /**

@@ -14,7 +14,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Input } from "../ui/input";
 
 type TablerIcon = React.FC<{
   size?: number;
@@ -153,7 +152,6 @@ function ShapeItem({
 
 type TabId =
   | "components"
-  | "search"
   | "templates"
   | "integrations"
   | "flows"
@@ -167,7 +165,6 @@ type TabId =
 export default function Sidebar() {
   const activeProjectId = useProjectStore((s) => s.activeProjectId);
   const diagramMode = useCanvasStore((s) => s.diagramMode);
-  const [query, setQuery] = React.useState("");
   const [activeTab, setActiveTab] = React.useState<TabId>("components");
   const [isCollapsed, setIsCollapsed] = React.useState(false);
 
@@ -191,17 +188,6 @@ export default function Sidebar() {
   const toggleCategory = (cat: NodeCategory) => {
     setExpanded((prev) => ({ ...prev, [cat]: !prev[cat] }));
   };
-
-  const filtered = React.useMemo(() => {
-    const q = query.toLowerCase();
-    if (!q) return [];
-    return REGISTRY.filter(
-      (t) =>
-        t.label.toLowerCase().includes(q) ||
-        t.description.toLowerCase().includes(q) ||
-        t.subtype.toLowerCase().includes(q),
-    ).sort((a, b) => a.label.localeCompare(b.label));
-  }, [query]);
 
   const grouped = React.useMemo(() => {
     const items: Record<NodeCategory, NodeTemplate[]> = {
@@ -273,12 +259,7 @@ export default function Sidebar() {
           icon={TablerIcons.IconGrid4x4}
           label="Components"
         />
-        <RailIcon id="search" icon={TablerIcons.IconSearch} label="Search" />
-        <RailIcon
-          id="templates"
-          icon={TablerIcons.IconSparkles}
-          label="AI Templates"
-        />
+        <RailIcon id="templates" icon={TablerIcons.IconSparkles} label="AI" />
         <RailIcon
           id="integrations"
           icon={TablerIcons.IconPuzzle}
@@ -293,21 +274,27 @@ export default function Sidebar() {
             icon={TablerIcons.IconSettings}
             label="Settings"
           />
-          
+
           <Tooltip>
             <TooltipTrigger>
               <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
                 className="group flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
               >
-                <TablerIcons.IconChevronLeft 
-                  size={20} 
-                  stroke={1.5} 
-                  className={cn("transition-transform duration-300", isCollapsed && "rotate-180")} 
+                <TablerIcons.IconChevronLeft
+                  size={20}
+                  stroke={1.5}
+                  className={cn(
+                    "transition-transform duration-300",
+                    isCollapsed && "rotate-180",
+                  )}
                 />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right" className="font-medium text-[11px] py-1 shadow-2xl">
+            <TooltipContent
+              side="right"
+              className="font-medium text-[11px] py-1 shadow-2xl"
+            >
               {isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             </TooltipContent>
           </Tooltip>
@@ -315,10 +302,12 @@ export default function Sidebar() {
       </div>
 
       {/* Content Panel */}
-      <aside 
+      <aside
         className={cn(
           "flex flex-col overflow-hidden bg-card transition-all duration-300 ease-in-out",
-          isCollapsed ? "w-0 opacity-0 pointer-events-none" : "w-[260px] opacity-100"
+          isCollapsed
+            ? "w-0 opacity-0 pointer-events-none"
+            : "w-[260px] opacity-100",
         )}
       >
         {/* Header */}
@@ -327,17 +316,15 @@ export default function Sidebar() {
             <h2 className="text-[13px] font-bold text-foreground tracking-tight">
               {activeTab === "components"
                 ? "Components"
-                : activeTab === "search"
-                  ? "Search Registry"
-                  : activeTab === "templates"
-                    ? "AI Templates"
-                    : activeTab === "integrations"
-                      ? "Integrations"
-                      : activeTab === "flows"
-                        ? "Flows"
-                        : activeTab === "shapes"
-                          ? "Shapes"
-                          : "Settings"}
+                : activeTab === "templates"
+                  ? "AI"
+                  : activeTab === "integrations"
+                    ? "Integrations"
+                    : activeTab === "flows"
+                      ? "Flows"
+                      : activeTab === "shapes"
+                        ? "Shapes"
+                        : "Settings"}
             </h2>
             <div className="flex gap-1">
               <button className="p-1 rounded-md hover:bg-muted text-muted-foreground">
@@ -345,53 +332,63 @@ export default function Sidebar() {
               </button>
             </div>
           </div>
-
-          {(activeTab === "components" || activeTab === "search") && (
-            <div className="relative">
-              <Input
-                size="sm"
-                placeholder="Find services..."
-                value={query}
-                startIcon={<TablerIcons.IconSearch size={14} />}
-                endIcon={
-                  query ? (
-                    <button
-                      onClick={() => setQuery("")}
-                      className="pointer-events-auto hover:text-foreground"
-                    >
-                      <TablerIcons.IconX size={12} />
-                    </button>
-                  ) : undefined
-                }
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  if (e.target.value && activeTab !== "search")
-                    setActiveTab("search");
-                }}
-              />
-            </div>
-          )}
         </div>
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto py-2 px-1 custom-scrollbar">
-          {activeTab === "components" && !query && (
+          {activeTab === "components" && (
             <>
               {diagramMode === "c4" ? (
                 /* C4 Mode Palette */
                 <div className="flex flex-col gap-2 py-2">
                   {[
-                    { label: "Level 1: System Context", filter: (n: any) => n.subtype.startsWith('c4-person') || n.subtype === 'c4-system' || n.subtype === 'c4-external-system' },
-                    { label: "Level 2: Containers", filter: (n: any) => ['c4-web-app', 'c4-mobile-app', 'c4-api', 'c4-database', 'c4-message-bus', 'c4-microservice', 'c4-serverless'].includes(n.subtype) },
-                    { label: "Level 3: Components", filter: (n: any) => ['c4-component', 'c4-controller', 'c4-service', 'c4-repository', 'c4-gateway'].includes(n.subtype) }
+                    {
+                      label: "Level 1: System Context",
+                      filter: (n: any) =>
+                        n.subtype.startsWith("c4-person") ||
+                        n.subtype === "c4-system" ||
+                        n.subtype === "c4-external-system",
+                    },
+                    {
+                      label: "Level 2: Containers",
+                      filter: (n: any) =>
+                        [
+                          "c4-web-app",
+                          "c4-mobile-app",
+                          "c4-api",
+                          "c4-database",
+                          "c4-message-bus",
+                          "c4-microservice",
+                          "c4-serverless",
+                        ].includes(n.subtype),
+                    },
+                    {
+                      label: "Level 3: Components",
+                      filter: (n: any) =>
+                        [
+                          "c4-component",
+                          "c4-controller",
+                          "c4-service",
+                          "c4-repository",
+                          "c4-gateway",
+                        ].includes(n.subtype),
+                    },
                   ].map((section) => (
-                    <div key={section.label} className="px-3 pb-3 border-b border-border/40 last:border-0">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-3 block">
+                    <div
+                      key={section.label}
+                      className="px-3 pb-3 border-b border-border/40 last:border-0"
+                    >
+                      <h2 className="text-xs font-bold mb-3 block">
                         {section.label}
-                      </span>
+                      </h2>
+
                       <div className="flex flex-wrap gap-2">
                         {grouped.c4.filter(section.filter).map((t) => (
-                          <NodeItem key={t.subtype} template={t} disabled={!activeProjectId} />
+                          <NodeItem
+                            key={t.subtype}
+                            template={t}
+                            disabled={!activeProjectId}
+                          />
                         ))}
                       </div>
                     </div>
@@ -446,43 +443,6 @@ export default function Sidebar() {
               )}
             </>
           )}
-
-          {(activeTab === "search" || query) &&
-            (filtered.length > 0 ? (
-              <div className="py-1">
-                <div className="px-3.5 mb-2 text-[10px] font-medium text-muted-foreground">
-                  Showing {filtered.length} results for "{query}"
-                </div>
-                {filtered.map((t) => (
-                  <NodeItem
-                    key={t.subtype}
-                    template={t}
-                    disabled={!activeProjectId}
-                  />
-                ))}
-              </div>
-            ) : query ? (
-              <div className="px-4 py-8 text-center flex flex-col items-center">
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center mb-3 text-muted-foreground">
-                  <TablerIcons.IconSearch size={18} />
-                </div>
-                <div className="text-sm font-medium text-foreground mb-1">
-                  No results found
-                </div>
-                <div className="text-xs text-muted-foreground max-w-[150px] leading-relaxed">
-                  Try a different search term or browse by category.
-                </div>
-              </div>
-            ) : (
-              <div className="px-4 py-8 text-center flex flex-col items-center text-muted-foreground">
-                <TablerIcons.IconSearch
-                  size={24}
-                  stroke={1}
-                  className="mb-2 opacity-20"
-                />
-                <p className="text-[11px]">Type to search the registry</p>
-              </div>
-            ))}
 
           {activeTab === "templates" && (
             <div className="px-4 py-8 text-center flex flex-col items-center text-muted-foreground">
@@ -623,7 +583,7 @@ export default function Sidebar() {
         </div>
 
         {/* Custom Node Section - Always at bottom for Components tab */}
-        {activeTab === "components" && !query && (
+        {activeTab === "components" && (
           <div className="shrink-0 px-1 py-1 border-t border-border/30 pt-4 bg-muted/5 min-h-[140px]">
             <NodeItem
               isCustom
@@ -637,7 +597,9 @@ export default function Sidebar() {
               }}
             />
             <div className="my-2 px-3 py-2 bg-primary/5 rounded-lg border border-primary/10 mx-2">
-              <p className="text-[10px] text-primary/70 leading-relaxed italic">
+              {/* <h2 className="text-sm font-bold">Delete items?</h2> */}
+              <p className="text-[10px] text-primary-700 dark:text-primary-300">
+                {" "}
                 Tip: Drag this generic block onto the canvas to add custom
                 logic.
               </p>

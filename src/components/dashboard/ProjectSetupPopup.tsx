@@ -4,8 +4,13 @@ import {
   IconX,
   IconLoader2,
   IconInfoCircle,
+  IconFolder,
 } from "@tabler/icons-react";
 import { useProjectStore, MAX_PROJECTS } from "../../store/project.store";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import { Label } from "../ui/label";
 
 /**
  * Props for the ProjectSetupPopup component.
@@ -58,78 +63,63 @@ export default function ProjectSetupPopup({
               <IconFolderPlus size={18} stroke={1.8} />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-foreground tracking-tight">
-                Project Setup
-              </h2>
-              <p className="text-[11px] text-muted-foreground">
-                Start by naming your architecture
-              </p>
+              <h2 className="text-sm font-bold">Project Setup</h2>
+              <p className="text-xs">Start by naming your architecture</p>
             </div>
           </div>
-          <button
+          <Button
             onClick={onClose}
-            className="p-1.5 hover:bg-muted rounded-md transition-colors text-muted-foreground"
-          >
-            <IconX size={14} />
-          </button>
+            icon={IconX}
+            variant="outline"
+            size="icon-sm"
+          />
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="name"
-              className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-0.5"
-            >
-              Name
-            </label>
-            <input
+            <Label htmlFor="name">Name</Label>
+            <Input
               autoFocus
+              startIcon={<IconFolder size={8} stroke={1.8} />}
               id="name"
               placeholder="e.g. Payments Engine"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full h-9 px-3 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="desc"
-              className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-0.5"
-            >
-              Description
-            </label>
-            <textarea
+            <Label htmlFor="desc">Description</Label>
+            <Textarea
               id="desc"
               rows={2}
               placeholder="System details..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-2.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-colors resize-none"
             />
           </div>
 
           <div className="flex items-center justify-end gap-2 mt-1">
-            <button
+            <Button
+              icon={IconFolderPlus}
+              iconSide="right"
               type="submit"
               disabled={!name.trim() || loading || isLimitReached}
-              className={`w-full inline-flex items-center justify-center gap-2 h-9 px-4 text-xs font-semibold text-white rounded-lg transition-colors shadow-sm ${
+              className={`w-full${
                 isLimitReached
                   ? "bg-muted text-muted-foreground pointer-events-none"
                   : "bg-primary hover:bg-primary/90"
               }`}
+              loading={loading}
             >
               {loading ? (
-                <>
-                  <IconLoader2 size={14} className="animate-spin" />
-                  Initialising...
-                </>
+                <>Initialising...</>
               ) : isLimitReached ? (
                 "Project Limit Reached"
               ) : (
                 "Create Project"
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

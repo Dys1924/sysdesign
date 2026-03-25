@@ -57,6 +57,7 @@ function DiagramNode({ id, data, selected, type }: NodeProps) {
   const Icon = getIcon(meta.icon || "IconBox");
 
   const globalEditingId = useCanvasStore((s) => s.editingNodeId);
+  const diagramMode = useCanvasStore((s) => s.diagramMode);
   const editing = globalEditingId === id;
 
   const [draft, setDraft] = useState((meta.label as string) ?? "");
@@ -136,23 +137,34 @@ function DiagramNode({ id, data, selected, type }: NodeProps) {
     };
   } else if (subtype === "sh-flow-cylinder") {
     shapeClass = "rounded-[30%]"; // Approximate cylinder
+  } else if (subtype === "c4-person") {
+    shapeClass = "rounded-full px-6 py-10 aspect-square flex flex-col items-center justify-center";
   }
 
   const isGroup = type === "group";
-  const isFlow = (meta.category === "flow" || meta.category === "shape") && !isGroup;
+  const isC4 = category === "c4";
+  const isFlow = (meta.category === "flow" || meta.category === "shape") && !isGroup && !isC4;
 
   return (
     <div
       className={cn(
         "relative transition-all duration-150",
-        !isGroup && "px-3 py-2.5 border", // Groups handle their own padding/border
+        !isGroup && "px-3 py-2.5 border", 
         shapeClass,
-        editing ? "min-w-[220px] max-w-[240px]" : isFlow ? "min-w-[140px] aspect-4/3 flex flex-col items-center justify-center p-6 text-center" : isGroup ? "w-full h-full p-4!" : "min-w-[148px] max-w-[190px]",
+        editing ? "min-w-[220px] max-w-[240px]" : (isFlow || isC4) ? `${isC4 ? "min-w-[240px]" : "min-w-[180px]"} min-h-[100px] flex flex-col items-center justify-center p-6 text-center` : isGroup ? "w-full h-full p-4!" : "min-w-[148px] max-w-[190px]",
         selected
           ? "border-(--node-color) bg-[color-mix(in_srgb,var(--node-color)_6%,var(--card))] shadow-[0_0_0_3px_color-mix(in_srgb,var(--node-color)_20%,transparent)] border"
           : cn(
-              isGroup ? "bg-muted/3 border-2 border-dashed border-muted-foreground/20" : isFlow ? "bg-card border-foreground border-2" : "bg-card border-border shadow-[0_1px_4px_rgba(0,0,0,0.07)]", 
-              subtype === "sh-sticky" && "border-yellow-400 bg-yellow-100/50"
+              isGroup 
+                ? (diagramMode === 'c4' ? "bg-slate-50/50 border-2 border-slate-400 font-bold" : "bg-muted/3 border-2 border-dashed border-muted-foreground/20") 
+                : (isFlow || isC4) 
+                  ? cn(
+                      "border-2",
+                      isC4 ? "bg-[#1168BD] text-white border-[#0B4D8C] shadow-lg" : "bg-card border-foreground"
+                    ) 
+                  : "bg-card border-border shadow-[0_1px_4px_rgba(0,0,0,0.07)]", 
+              subtype === "sh-sticky" && "border-yellow-400 bg-yellow-100/50",
+              subtype === "c4-external-system" && "border-dashed bg-slate-200 text-slate-800 border-slate-500 shadow-md"
             ),
       )}
       style={{
@@ -184,7 +196,7 @@ function DiagramNode({ id, data, selected, type }: NodeProps) {
         </>
       )}
 
-      {!isFlow && !isGroup && (
+      {!isFlow && !isGroup && !isC4 && (
         <div className="flex items-center justify-between gap-2 mb-1.5">
           <div className="flex items-center gap-1.5 min-w-0">
             <div
@@ -280,24 +292,51 @@ function DiagramNode({ id, data, selected, type }: NodeProps) {
         </div>
       ) : (
         /* Read view */
-        <div onDoubleClick={openEdit} className={cn("cursor-text", isFlow && "flex flex-col items-center", isGroup && "flex items-start")}>
-          <div className={cn("flex flex-wrap gap-1 items-center", (isFlow || isGroup) && "justify-center", isGroup && "w-full opacity-60")}>
-            {!isFlow && !isGroup && <IconPencilBolt size={10} stroke={1.8} />}
+        <div onDoubleClick={openEdit} className={cn(
+          "cursor-text h-full", 
+          (isFlow || isC4) && "flex flex-col items-center justify-center", 
+          isGroup && (diagramMode === 'c4' ? "flex items-start" : "flex items-start")
+        )}>
+          {isC4 && subtype === 'c4-person' && (
+            <div className="mb-2 opacity-80">
+              <TablerIcons.IconUser size={32} stroke={1.5} />
+            </div>
+          )}
+
+          <div className={cn(
+            "flex flex-wrap gap-1 items-center", 
+            (isFlow || isC4 || isGroup) && "justify-center", 
+            isGroup && "w-full opacity-60",
+            isGroup && diagramMode === 'c4' && "justify-start opacity-100"
+          )}>
+            {!isFlow && !isGroup && !isC4 && <IconPencilBolt size={10} stroke={1.8} />}
             <h6 className={cn(
               "font-semibold",
-              isFlow ? "text-sm" : isGroup ? "text-[10px] uppercase tracking-wider" : "text-[8px]"
+              isFlow ? "text-sm" : isC4 ? "text-base" : isGroup ? "text-[10px] uppercase tracking-wider" : "text-[8px]",
+              isGroup && diagramMode === 'c4' && "text-[9px] font-bold text-slate-500"
             )}>
               {meta.label as string}
             </h6>
           </div>
 
-          {meta.description && !isFlow && (
+          {isC4 && (
+            <div className="flex flex-col items-center gap-1 mt-1">
+              <div className="text-[10px] opacity-90 max-w-[160px] leading-snug">
+                {meta.description as string}
+              </div>
+              <div className="text-[9px] font-bold opacity-60 uppercase mt-2">
+                [{subtype.replace('c4-', '').replace('-', ' ')}]
+              </div>
+            </div>
+          )}
+
+          {meta.description && !isFlow && !isC4 && (
             <div className="text-[7px] text-muted-foreground mt-0.5">
               {meta.description as string}
             </div>
           )}
 
-          {(meta.owner || meta.notes) && (
+          {(meta.owner || meta.notes) && !isC4 && (
             <div className="mt-1.5 pt-1.5 border-t border-dashed border-border flex flex-col gap-0.5">
               {meta.owner && (
                 <div

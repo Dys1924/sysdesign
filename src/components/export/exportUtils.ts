@@ -101,6 +101,76 @@ export function exportTerraform(nodes: DiagramNode[], edges: DiagramEdge[]): voi
   blob([...header, ...resources, ...deps].join('\n'), 'main.tf')
 }
 
+/**
+ * Generates and downloads a Structurizr DSL workspace representation.
+ * Maps C4 categories and subtypes to their respective DSL elements (person, softwareSystem, container, component).
+ * @param nodes - Collection of diagram nodes
+ * @param edges - Collection of diagram edges
+ */
+export function exportStructurizr(nodes: DiagramNode[], edges: DiagramEdge[]): void {
+  const rootNodes = nodes.filter(n => !n.parentId)
+  const modelLines: string[] = []
+
+  const renderNode = (n: DiagramNode, depth: number) => {
+    const indent = '    '.repeat(depth)
+    const subtype = n.data.subtype as string
+    const label = (n.data.label as string).replace(/"/g, "'")
+    const desc = (n.data.description as string || '').replace(/"/g, "'")
+    const id = n.id.replace(/-/g, '_')
+    const children = nodes.filter(child => child.parentId === n.id)
+
+    let keyword = 'container'
+    if (subtype === 'c4-person') keyword = 'person'
+    else if (subtype === 'c4-system' || subtype === 'c4-external-system' || (n.type === 'group' && depth === 2)) keyword = 'softwareSystem'
+    else if (subtype.includes('component') || ['c4-controller', 'c4-service', 'c4-repository', 'c4-gateway'].includes(subtype)) keyword = 'component'
+    else if (n.type === 'group') keyword = 'container'
+
+    if (children.length > 0) {
+      modelLines.push(`${indent}${id} = ${keyword} "${label}" "${desc}" {`)
+      children.forEach(child => renderNode(child, depth + 1))
+      modelLines.push(`${indent}}`)
+    } else {
+      modelLines.push(`${indent}${id} = ${keyword} "${label}" "${desc}"`)
+    }
+  }
+
+  rootNodes.forEach(rn => renderNode(rn, 2))
+
+  const relationshipLines = edges.map((e) => {
+    const src = e.source.replace(/-/g, '_')
+    const tgt = e.target.replace(/-/g, '_')
+    const label = (typeof e.label === 'string' ? e.label : (e.data?.label as string) || 'Uses').replace(/"/g, "'")
+    return `        ${src} -> ${tgt} "${label}"`
+  })
+
+  const dsl = [
+    'workspace {',
+    '    model {',
+    ...modelLines,
+    '',
+    ...relationshipLines,
+    '    }',
+    '    views {',
+    '        systemContext nodes {',
+    '            include *',
+    '            autolayout lr',
+    '        }',
+    '        container nodes {',
+    '            include *',
+    '            autolayout lr',
+    '        }',
+    '        component nodes {',
+    '            include *',
+    '            autolayout lr',
+    '        }',
+    '        theme default',
+    '    }',
+    '}'
+  ].join('\n')
+
+  blob(dsl, 'workspace.dsl')
+}
+
 function slug(n: DiagramNode) {
   return (n.data.label as string).toLowerCase().replace(/[^a-z0-9]/g, '_')
 }

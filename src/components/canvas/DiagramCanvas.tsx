@@ -40,7 +40,10 @@ import {
   IconKeyboard,
   IconX,
   IconInfoCircle,
+  IconCancel,
+  IconTrash,
 } from "@tabler/icons-react";
+import { Button } from "../ui/button";
 
 const nodeTypes: NodeTypes = { diagram: DiagramNodeComponent };
 const edgeTypes: EdgeTypes = { smoothstep: DiagramEdgeComponent };
@@ -244,10 +247,9 @@ export default function DiagramCanvas() {
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-card border border-border rounded-xl shadow-2xl p-6 max-w-sm w-full animate-in zoom-in-95 duration-200 flex flex-col gap-4">
             <div>
-              <h3 className="text-lg font-semibold text-foreground tracking-tight">
-                Delete items?
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
+              <h2 className="text-sm font-bold">Delete items?</h2>
+              <p className="text-xs">
+                {" "}
                 Are you sure you want to delete {selectedCount} selected item
                 {selectedCount !== 1 ? "s" : ""}? This action can be undone
                 later with Ctrl+Z.
@@ -255,13 +257,35 @@ export default function DiagramCanvas() {
             </div>
 
             <div className="flex items-center justify-end gap-2.5 mt-2">
-              <button
+              <Button
+                icon={IconCancel}
+                iconSide="left"
+                variant="outline"
+                onClick={() => setShowDelete(false)}
+              >
+                Cancel
+              </Button>
+
+              {/* <button
                 onClick={() => setShowDelete(false)}
                 className="px-4 py-2 text-sm font-medium text-foreground bg-secondary hover:bg-secondary/80 rounded-lg transition-colors border border-border"
               >
                 Cancel
-              </button>
-              <button
+              </button> */}
+
+              <Button
+                icon={IconTrash}
+                iconSide="right"
+                variant="destructive"
+                onClick={() => {
+                  deleteSelected();
+                  setShowDelete(false);
+                }}
+              >
+                Delete
+              </Button>
+
+              {/* <button
                 onClick={() => {
                   deleteSelected();
                   setShowDelete(false);
@@ -269,7 +293,7 @@ export default function DiagramCanvas() {
                 className="px-4 py-2 text-sm font-medium text-white bg-destructive hover:bg-destructive/90 rounded-lg transition-colors shadow-sm"
               >
                 Delete
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

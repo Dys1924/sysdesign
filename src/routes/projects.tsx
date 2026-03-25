@@ -16,6 +16,7 @@ import {
   IconLayoutGrid,
   IconLayoutList,
   IconInfoCircle,
+  IconFolderPlus,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
@@ -96,12 +97,12 @@ function ProjectsPage() {
                 Manage and organize your system architect diagrams
               </p>
             </div>
+
             <Button
+              icon={IconFolderPlus}
+              iconSide="right"
               onClick={() => setModalOpen(true)}
-              className={"text-xs px-4"}
-              // className="inline-flex items-center gap-2 h-10 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-all shadow-sm"
             >
-              <IconPlus size={18} stroke={2} />
               New Project
             </Button>
           </div>

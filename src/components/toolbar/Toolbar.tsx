@@ -82,6 +82,7 @@ export default function Toolbar() {
   const [projectMenuOpen, setProjectMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [templateConfirm, setTemplateConfirm] = useState<Template | null>(null);
+  const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
   const [exporting, setExporting] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -156,7 +157,19 @@ export default function Toolbar() {
           onClose={() => setTemplateConfirm(null)}
           onConfirm={() => handleLoadTemplate(templateConfirm!)}
         />
-        
+
+        <ConfirmModal
+          open={clearConfirmOpen}
+          title="Clear Canvas?"
+          description="This will remove all nodes and edges from your design. This action can be undone with the undo button."
+          confirmText="Clear Canvas"
+          onClose={() => setClearConfirmOpen(false)}
+          onConfirm={() => {
+            clearCanvas();
+            setClearConfirmOpen(false);
+          }}
+        />
+
         {/* Left — brand + stats */}
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2 relative">
@@ -166,7 +179,7 @@ export default function Toolbar() {
 
           <Link
             to="/projects"
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all select-none"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-muted-background hover:text-foreground hover:bg-muted transition-all select-none"
           >
             <IconFolder size={14} stroke={1.8} />
             Projects
@@ -174,7 +187,7 @@ export default function Toolbar() {
 
           <Link
             to="/templates"
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all select-none"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-muted-background hover:text-foreground hover:bg-muted transition-all select-none"
           >
             <IconBook size={14} stroke={1.8} className="text-primary" />
             Templates
@@ -183,6 +196,19 @@ export default function Toolbar() {
           {/* Project Selector Dropdown */}
           <div className="relative flex items-center">
             <Button
+              variant={"outline"}
+              icon={
+                <IconChevronDown
+                  className={`transition-transform duration-200 ${projectMenuOpen ? "rotate-180" : ""}`}
+                />
+              }
+              iconSide="right"
+              onClick={() => setProjectMenuOpen(!projectMenuOpen)}
+            >
+              {activeProject ? activeProject.name : "Select Project"}
+            </Button>
+
+            {/* <Button
               id="project-btn"
               variant="ghost"
               size="sm"
@@ -196,7 +222,7 @@ export default function Toolbar() {
                 size={12}
                 className={`transition-transform duration-200 ${projectMenuOpen ? "rotate-180" : ""}`}
               />
-            </Button>
+            </Button> */}
 
             {projectMenuOpen && (
               <div
@@ -205,7 +231,7 @@ export default function Toolbar() {
                            rounded-xl p-1 min-w-[200px] shadow-xl animate-in fade-in slide-in-from-top-1"
               >
                 <div className="px-3 py-1.5 border-b border-border/50 mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                  <span className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-muted-background hover:text-foreground hover:bg-muted transition-all select-none">
                     Switch Project
                   </span>
                 </div>
@@ -221,22 +247,38 @@ export default function Toolbar() {
                       }}
                       className={`w-full justify-start px-3 py-2 h-auto text-left gap-2 ${p.id === activeProjectId ? "bg-primary/5 text-primary" : ""}`}
                     >
-                      <IconFolder size={14} className={p.id === activeProjectId ? "text-primary" : "text-muted-foreground"} />
+                      <IconFolder
+                        size={14}
+                        className={
+                          p.id === activeProjectId
+                            ? "text-primary"
+                            : "text-muted-foreground"
+                        }
+                      />
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[12.5px] font-medium truncate">{p.name}</span>
-                        <span className="text-[10px] text-muted-foreground truncate">{new Date(p.updatedAt).toLocaleDateString()}</span>
+                        <span className="text-[12.5px] font-medium truncate">
+                          {p.name}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground truncate">
+                          {new Date(p.updatedAt).toLocaleDateString()}
+                        </span>
                       </div>
                     </Button>
                   ))}
                 </div>
                 <div className="mt-1 pt-1 border-t border-border/50">
                   <Button
-                    onClick={() => { setProjectMenuOpen(false); navigate({ to: "/projects" }); }}
+                    onClick={() => {
+                      setProjectMenuOpen(false);
+                      navigate({ to: "/projects" });
+                    }}
                     variant="ghost"
                     className="w-full justify-start px-3 py-2 h-auto text-left gap-2 text-primary hover:bg-primary/5"
                   >
                     <IconSquarePlus size={14} />
-                    <span className="text-[12px] font-semibold">All Projects</span>
+                    <span className="text-[12px] font-semibold">
+                      All Projects
+                    </span>
                   </Button>
                 </div>
               </div>
@@ -244,7 +286,9 @@ export default function Toolbar() {
           </div>
 
           <span className="text-border mx-1 opacity-50">|</span>
-          <span className={`text-[11.5px] text-muted-foreground transition-opacity ${isCanvasRoute ? "opacity-100" : "opacity-0"}`}>
+          <span
+            className={`text-[11.5px] text-muted-foreground transition-opacity ${isCanvasRoute ? "opacity-100" : "opacity-0"}`}
+          >
             {nodes.length} nodes · {edges.length} edges
           </span>
         </div>
@@ -261,23 +305,45 @@ export default function Toolbar() {
                 className="rounded-full overflow-hidden border-2 border-primary/20 p-0"
               >
                 {user.user_metadata?.avatar_url ? (
-                  <img src={user.user_metadata.avatar_url} alt="" className="w-full h-full object-cover" />
+                  <img
+                    src={user.user_metadata.avatar_url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <IconUserCircle size={18} />
                 )}
               </Button>
             ) : (
-              <Button onClick={login} disabled={loading || migrating} variant="outline" size="sm" className="gap-1.5 h-8">
-                {loading || migrating ? (
-                  <IconLoader2 size={14} className="animate-spin" />
-                ) : (
+              <Button
+                onClick={login}
+                variant="outline"
+                disabled={loading || migrating}
+                size={"lg"}
+                icon={
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.84z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                    <path
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      fill="#4285F4"
+                    />
+                    <path
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      fill="#34A853"
+                    />
+                    <path
+                      d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.84z"
+                      fill="#FBBC05"
+                    />
+                    <path
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                      fill="#EA4335"
+                    />
                   </svg>
-                )}
+                }
+                iconSide="left"
+                type="submit"
+                loading={loading}
+              >
                 {migrating ? "Wait…" : "Sign in"}
               </Button>
             )}
@@ -285,11 +351,18 @@ export default function Toolbar() {
             {userMenuOpen && user && (
               <div className="absolute top-[calc(100%+6px)] right-0 z-50 bg-card border border-border rounded-xl p-1 min-w-[200px] shadow-lg">
                 <div className="px-3 py-2 border-b border-border/50 mb-1">
-                  <p className="text-[12px] font-semibold truncate">{user.user_metadata?.full_name || "User"}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
+                  <p className="text-[12px] font-semibold truncate">
+                    {user.user_metadata?.full_name || "User"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {user.email}
+                  </p>
                 </div>
                 <Button
-                  onClick={() => { logout(); setUserMenuOpen(false); }}
+                  onClick={() => {
+                    logout();
+                    setUserMenuOpen(false);
+                  }}
                   variant="ghost"
                   className="w-full justify-start text-destructive px-3 py-2 h-auto"
                 >
@@ -304,33 +377,27 @@ export default function Toolbar() {
 
       {/* Floating Bottom Toolbar — Design System Center Dock */}
       {isCanvasRoute && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="flex items-center gap-1.5 p-1.5 bg-card/85 backdrop-blur-xl border border-border/80 rounded-[22px] shadow-[0_12px_40px_rgba(0,0,0,0.15)] ring-1 ring-white/10">
-            
+        <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex items-center gap-1.5 p-1.5 bg-card backdrop-blur-xl border rounded-sm">
             {/* Mode Segmented Controls */}
-            <div className="flex items-center bg-muted/40 p-0.5 rounded-[14px] border border-border/30 mr-2">
+            <div className="flex items-center bg-muted p-0.5 rounded-md border">
               <Button
-                variant={diagramMode === "architecture" ? "default" : "ghost"}
-                size="xs"
                 onClick={() => setDiagramMode("architecture")}
-                className={cn(
-                  "h-8 px-4 text-[10px] font-bold uppercase tracking-widest rounded-[10px] transition-all",
-                  diagramMode === "architecture" ? "shadow-md bg-background" : "text-muted-foreground hover:text-foreground"
-                )}
+                // icon={IconVectorBezier2}
+                // iconSide="left"
+                variant={diagramMode === "architecture" ? "default" : "ghost"}
+                className={"text-xs font-medium rounded-l-md w-16"}
               >
-                <IconVectorBezier2 size={12} className="mr-2 opacity-80" />
-                Arch
+                Design
               </Button>
+
               <Button
-                variant={diagramMode === "c4" ? "default" : "ghost"}
-                size="xs"
                 onClick={() => setDiagramMode("c4")}
-                className={cn(
-                  "h-8 px-4 text-[10px] font-bold uppercase tracking-widest rounded-[10px] transition-all",
-                  diagramMode === "c4" ? "shadow-md bg-background" : "text-muted-foreground hover:text-foreground"
-                )}
+                // icon={IconSitemap}
+                // iconSide="left"
+                variant={diagramMode === "c4" ? "default" : "ghost"}
+                className={"text-xs font-medium rounded-r-md w-16"}
               >
-                <IconSitemap size={12} className="mr-2 opacity-80" />
                 C4
               </Button>
             </div>
@@ -339,10 +406,24 @@ export default function Toolbar() {
 
             {/* History Dock */}
             <div className="flex items-center gap-1">
-              <Button onClick={undo} disabled={!canUndo} variant="ghost" size="icon-sm" className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors disabled:opacity-30" title="Undo (⌘Z)">
+              <Button
+                onClick={undo}
+                disabled={!canUndo}
+                variant="ghost"
+                size="icon-sm"
+                className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors disabled:opacity-30"
+                title="Undo (⌘Z)"
+              >
                 <IconArrowBackUp size={18} stroke={1.5} />
               </Button>
-              <Button onClick={redo} disabled={!canRedo} variant="ghost" size="icon-sm" className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors disabled:opacity-30" title="Redo (⌘Y)">
+              <Button
+                onClick={redo}
+                disabled={!canRedo}
+                variant="ghost"
+                size="icon-sm"
+                className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors disabled:opacity-30"
+                title="Redo (⌘Y)"
+              >
                 <IconArrowForwardUp size={18} stroke={1.5} />
               </Button>
             </div>
@@ -351,13 +432,31 @@ export default function Toolbar() {
 
             {/* Navigation Dock */}
             <div className="flex items-center gap-1">
-              <Button onClick={() => zoomIn()} variant="ghost" size="icon-sm" className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors" title="Zoom In (+)">
+              <Button
+                onClick={() => zoomIn()}
+                variant="ghost"
+                size="icon-sm"
+                className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors"
+                title="Zoom In (+)"
+              >
                 <IconZoomIn size={18} stroke={1.5} />
               </Button>
-              <Button onClick={() => zoomOut()} variant="ghost" size="icon-sm" className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors" title="Zoom Out (-)">
+              <Button
+                onClick={() => zoomOut()}
+                variant="ghost"
+                size="icon-sm"
+                className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors"
+                title="Zoom Out (-)"
+              >
                 <IconZoomOut size={18} stroke={1.5} />
               </Button>
-              <Button onClick={() => fitView({ duration: 450 })} variant="ghost" size="icon-sm" className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors" title="Fit to Canvas">
+              <Button
+                onClick={() => fitView({ duration: 450 })}
+                variant="ghost"
+                size="icon-sm"
+                className="h-9 w-9 rounded-xl hover:bg-primary/5 hover:text-primary transition-colors"
+                title="Fit to Canvas"
+              >
                 <IconFocus2 size={18} stroke={1.5} />
               </Button>
             </div>
@@ -367,33 +466,35 @@ export default function Toolbar() {
             {/* Utility Actions */}
             <div className="flex items-center gap-1">
               <Button
+                icon={IconGridDots}
                 onClick={toggleSnap}
-                variant={snapToGrid ? "default" : "ghost"}
-                size="icon-sm"
-                className={cn("h-9 w-9 rounded-xl transition-all", snapToGrid ? "bg-primary/10 text-primary border-primary/20" : "hover:text-primary")}
-                title="Snap to Grid"
-              >
-                <IconGridDots size={18} stroke={1.5} />
-              </Button>
-              <Button
+                variant={snapToGrid ? "default" : "outline"}
+                loading={loading}
+              />
+
+              {/* <Button
                 onClick={() => groupSelected()}
                 disabled={!hasSelection}
-                variant="ghost"
+                icon={IconSquarePlus}
+                loading={loading}
+                iconSide="left"
+                variant="outline"
                 size="sm"
-                className="px-3 h-9 gap-2 text-[11px] font-bold uppercase tracking-tight rounded-xl hover:bg-primary/5 hover:text-primary transition-all disabled:opacity-30"
               >
-                <IconSquarePlus size={15} stroke={2} />
                 Group
-              </Button>
+              </Button> */}
+
               <Button
-                onClick={clearCanvas}
+                onClick={() => setClearConfirmOpen(true)}
                 disabled={!hasNodes}
-                variant="ghost"
-                size="icon-sm"
-                className="h-9 w-9 rounded-xl text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30"
-                title="Wipe Canvas"
+                icon={IconTrash}
+                loading={loading}
+                iconSide="left"
+                variant="destructive"
+                size="sm"
+                className={"text-destructive hover:bg-destructive/10"}
               >
-                <IconTrash size={18} stroke={1.5} />
+                Clear
               </Button>
             </div>
 
@@ -404,19 +505,21 @@ export default function Toolbar() {
               <Button
                 onClick={() => setExportOpen((p) => !p)}
                 disabled={!hasNodes}
+                icon={IconChevronDown}
+                loading={exporting ? true : false}
+                iconSide="right"
                 variant="default"
                 size="sm"
-                className="h-9 px-4 rounded-xl gap-2 shadow-lg shadow-primary/10 hover:shadow-primary/20 transition-all font-bold uppercase text-[10px] tracking-widest disabled:opacity-50"
               >
-                {exporting ? <IconLoader2 size={14} className="animate-spin" /> : <IconDownload size={14} stroke={2} />}
-                {exporting ? "Wait" : "Export"}
-                <IconChevronDown size={11} className={cn("transition-transform duration-300", exportOpen && "rotate-180")} />
+                Export
               </Button>
 
               {exportOpen && (
                 <div className="absolute bottom-[calc(100%+16px)] right-0 z-50 bg-card/95 backdrop-blur-2xl border border-border/80 rounded-2xl p-1.5 min-w-[220px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <div className="px-3.5 py-2 border-b border-border/40 mb-1.5">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">Select Format</span>
+                    <span className="flex items-center text-primary-500 gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-muted-background hover:text-foreground hover:bg-muted transition-all select-none">
+                      Select Format
+                    </span>
                   </div>
                   <div className="space-y-0.5">
                     {EXPORT_OPTIONS.map((opt) => (
@@ -426,8 +529,12 @@ export default function Toolbar() {
                         variant="ghost"
                         className="w-full flex-col items-start px-3.5 py-2.5 h-auto text-left rounded-xl hover:bg-primary/5 group"
                       >
-                        <span className="text-[13px] font-bold group-hover:text-primary transition-colors">{opt.label}</span>
-                        <span className="text-[10px] text-muted-foreground font-medium opacity-80">{opt.desc}</span>
+                        <span className="flex items-center gap-1.5 rounded-md text-xs font-medium text-muted-background hover:text-foreground transition-all select-none">
+                          {opt.label}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-medium opacity-80">
+                          {opt.desc}
+                        </span>
                       </Button>
                     ))}
                   </div>
