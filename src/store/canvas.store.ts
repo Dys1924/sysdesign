@@ -264,6 +264,20 @@ export function addNode(node: DiagramNode) {
 }
 
 /**
+ * Replaces the entire canvas with AI-generated nodes and edges.
+ * Records to undo history so users can Ctrl+Z back to what they had.
+ * @param nodes - Fully formed DiagramNode array from AI output parser
+ * @param edges - Fully formed DiagramEdge array from AI output parser
+ */
+export function setDiagramFromAI(nodes: DiagramNode[], edges: DiagramEdge[]) {
+  canvasStore.setState((s) => {
+    const next = pushHistory({ ...s, nodes, edges })
+    save(next)
+    return next
+  })
+}
+
+/**
  * Updates the text label displayed on a specific node.
  * @param id - The unique ID of the node
  * @param label - The new label text

@@ -448,7 +448,10 @@ export default function Toolbar() {
                 onClick={toggleSnap}
                 variant={snapToGrid ? "default" : "outline"}
                 loading={loading}
+                size="sm"
               />
+
+              <div className="w-px h-6 bg-border mx-1" />
 
               <Button
                 onClick={() => setClearConfirmOpen(true)}

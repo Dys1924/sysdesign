@@ -237,11 +237,7 @@ export default function Sidebar() {
       <TooltipTrigger>
         <button
           onClick={() => {
-            if (
-              id === "integrations" ||
-              id === "flows" ||
-              id === "shapes"
-            ) {
+            if (id === "integrations" || id === "flows" || id === "shapes") {
               navigate({ to: `/${id}` });
               setActiveTab(id);
               return;
@@ -255,7 +251,28 @@ export default function Sidebar() {
                 if (isCollapsed) setIsCollapsed(false);
                 return;
               }
-              setShowAIPanel((prev) => !prev);
+              // If panel is already open, just close it
+              if (showAIPanel) {
+                setShowAIPanel(false);
+                return;
+              }
+              // Navigate back to the canvas the user was on, then open panel
+              if (activeProject) {
+                if (diagramMode === "c4") {
+                  navigate({
+                    to: "/$slug/c4",
+                    params: { slug: activeProject.slug } as any,
+                  });
+                  setActiveTab("c4");
+                } else {
+                  navigate({
+                    to: "/$slug",
+                    params: { slug: activeProject.slug } as any,
+                  });
+                  setActiveTab("components");
+                }
+              }
+              setShowAIPanel(true);
               return;
             }
             // Check if we're switching between diagram modes
@@ -620,32 +637,108 @@ export default function Sidebar() {
                 </p>
               </div>
               {[
-                { icon: TablerIcons.IconBrandGithub, name: "GitHub", desc: "Import docker-compose.yml or Terraform → diagram", tag: "Import", color: "#24292e", hot: true },
-                { icon: TablerIcons.IconBrandSupabase, name: "Supabase", desc: "Auto-generate ER diagram from your schema", tag: "Schema", color: "#3ECF8E", hot: true },
-                { icon: TablerIcons.IconCloud, name: "AWS / GCP / Azure", desc: "Visualize your live infrastructure via API key", tag: "Live infra", color: "#FF9900" },
-                { icon: TablerIcons.IconApi, name: "Postman / OpenAPI", desc: "Import a Swagger spec → API flow diagram", tag: "Import", color: "#FF6C37", hot: true },
-                { icon: TablerIcons.IconContainer, name: "Kubernetes", desc: "Visualize running services, deployments, ingress", tag: "Live infra", color: "#326CE5" },
-                { icon: TablerIcons.IconBook, name: "Confluence / Notion", desc: "Embed read-only diagram in your docs", tag: "Embed", color: "#0052CC" },
-                { icon: TablerIcons.IconBrandSlack, name: "Slack", desc: "Share a diagram snapshot to any channel", tag: "Share", color: "#4A154B" },
-                { icon: TablerIcons.IconBrandTrello, name: "Jira", desc: "Attach a diagram to a ticket or epic", tag: "Attach", color: "#0052CC" },
+                {
+                  icon: TablerIcons.IconBrandGithub,
+                  name: "GitHub",
+                  desc: "Import docker-compose.yml or Terraform → diagram",
+                  tag: "Import",
+                  color: "#24292e",
+                  hot: true,
+                },
+                {
+                  icon: TablerIcons.IconBrandSupabase,
+                  name: "Supabase",
+                  desc: "Auto-generate ER diagram from your schema",
+                  tag: "Schema",
+                  color: "#3ECF8E",
+                  hot: true,
+                },
+                {
+                  icon: TablerIcons.IconCloud,
+                  name: "AWS / GCP / Azure",
+                  desc: "Visualize your live infrastructure via API key",
+                  tag: "Live infra",
+                  color: "#FF9900",
+                },
+                {
+                  icon: TablerIcons.IconApi,
+                  name: "Postman / OpenAPI",
+                  desc: "Import a Swagger spec → API flow diagram",
+                  tag: "Import",
+                  color: "#FF6C37",
+                  hot: true,
+                },
+                {
+                  icon: TablerIcons.IconContainer,
+                  name: "Kubernetes",
+                  desc: "Visualize running services, deployments, ingress",
+                  tag: "Live infra",
+                  color: "#326CE5",
+                },
+                {
+                  icon: TablerIcons.IconBook,
+                  name: "Confluence / Notion",
+                  desc: "Embed read-only diagram in your docs",
+                  tag: "Embed",
+                  color: "#0052CC",
+                },
+                {
+                  icon: TablerIcons.IconBrandSlack,
+                  name: "Slack",
+                  desc: "Share a diagram snapshot to any channel",
+                  tag: "Share",
+                  color: "#4A154B",
+                },
+                {
+                  icon: TablerIcons.IconBrandTrello,
+                  name: "Jira",
+                  desc: "Attach a diagram to a ticket or epic",
+                  tag: "Attach",
+                  color: "#0052CC",
+                },
               ].map((item) => (
-                <div key={item.name} className="flex items-start gap-2.5 px-3 py-2.5 mx-0.5 rounded-lg hover:bg-muted/60 transition-colors cursor-default group">
-                  <div className="size-7 rounded-md flex items-center justify-center shrink-0 mt-0.5" style={{ background: `${item.color}18` }}>
-                    <item.icon size={14} stroke={1.5} style={{ color: item.color }} />
+                <div
+                  key={item.name}
+                  className="flex items-start gap-2.5 px-3 py-2.5 mx-0.5 rounded-lg hover:bg-muted/60 transition-colors cursor-default group"
+                >
+                  <div
+                    className="size-7 rounded-md flex items-center justify-center shrink-0 mt-0.5"
+                    style={{ background: `${item.color}18` }}
+                  >
+                    <item.icon
+                      size={14}
+                      stroke={1.5}
+                      style={{ color: item.color }}
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[11.5px] font-semibold text-foreground leading-tight">{item.name}</span>
-                      {item.hot && <span className="text-[8px] font-bold text-primary">●</span>}
+                      <span className="text-[11.5px] font-semibold text-foreground leading-tight">
+                        {item.name}
+                      </span>
+                      {item.hot && (
+                        <span className="text-[8px] font-bold text-primary">
+                          ●
+                        </span>
+                      )}
                     </div>
-                    <div className="text-[10px] text-muted-foreground leading-snug mt-0.5">{item.desc}</div>
+                    <div className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                      {item.desc}
+                    </div>
                   </div>
-                  <span className="text-[8px] font-medium text-muted-foreground/60 bg-muted/80 px-1 py-0.5 rounded shrink-0 mt-0.5">{item.tag}</span>
+                  <span className="text-[8px] font-medium text-muted-foreground/60 bg-muted/80 px-1 py-0.5 rounded shrink-0 mt-0.5">
+                    {item.tag}
+                  </span>
                 </div>
               ))}
-              <div className="mx-3 mt-3 py-2 px-3 bg-muted/40 rounded-lg border border-border/30 flex items-center gap-2">
-                <TablerIcons.IconRocket size={11} className="text-muted-foreground/50 shrink-0 animate-pulse" />
-                <p className="text-[9px] text-muted-foreground/60 font-medium tracking-wider uppercase">Coming Soon</p>
+              <div className="mx-3 mt-3 py-2 px-3 bg-muted/40 rounded-xs border border-border/30 flex items-center gap-2">
+                <TablerIcons.IconRocket
+                  size={11}
+                  className="text-muted-foreground/50 shrink-0 animate-pulse"
+                />
+                <p className="text-[9px] text-muted-foreground/60 font-medium tracking-wider uppercase">
+                  Coming Soon
+                </p>
               </div>
             </div>
           )}
@@ -654,37 +747,120 @@ export default function Sidebar() {
             <div className="flex flex-col py-2 px-1 gap-1">
               <div className="px-3 pb-2">
                 <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  Diagram types that technical teams draw constantly — built for engineers.
+                  Diagram types that technical teams draw constantly — built for
+                  engineers.
                 </p>
               </div>
               {[
-                { icon: TablerIcons.IconArrowsLeftRight, name: "Sequence Diagrams", desc: "Request/response chains, async events across services", tag: "API", color: "#6366f1", hot: true },
-                { icon: TablerIcons.IconArrowsSplit2, name: "Data Flow Diagrams", desc: "How data moves, transforms, and is stored", tag: "Data", color: "#0ea5e9", hot: true },
-                { icon: TablerIcons.IconTimeline, name: "Event Storming", desc: "Domain events, commands, bounded contexts (DDD)", tag: "DDD", color: "#f59e0b" },
-                { icon: TablerIcons.IconUser, name: "User Journey", desc: "Steps, decision points, and error states in a product", tag: "UX", color: "#10b981" },
-                { icon: TablerIcons.IconGitBranch, name: "CI/CD Pipeline", desc: "Source → build → test → deploy → monitor", tag: "DevOps", color: "#8b5cf6" },
-                { icon: TablerIcons.IconAlertTriangle, name: "Incident Response", desc: "Alert triggers, escalation paths, resolution steps", tag: "SRE", color: "#ef4444" },
-                { icon: TablerIcons.IconShieldLock, name: "Auth Flow", desc: "OAuth, OIDC, JWT — client to auth server flows", tag: "Security", color: "#ec4899", hot: true },
-                { icon: TablerIcons.IconDatabase, name: "DB Migration Flow", desc: "Schema changes, rollbacks, dependency ordering", tag: "Infra", color: "#14b8a6" },
-                { icon: TablerIcons.IconServer, name: "Deployment Topology", desc: "Blue/green, canary, rolling deployments visualized", tag: "Deploy", color: "#f97316" },
+                {
+                  icon: TablerIcons.IconArrowsLeftRight,
+                  name: "Sequence Diagrams",
+                  desc: "Request/response chains, async events across services",
+                  tag: "API",
+                  color: "#6366f1",
+                  hot: true,
+                },
+                {
+                  icon: TablerIcons.IconArrowsSplit2,
+                  name: "Data Flow Diagrams",
+                  desc: "How data moves, transforms, and is stored",
+                  tag: "Data",
+                  color: "#0ea5e9",
+                  hot: true,
+                },
+                {
+                  icon: TablerIcons.IconTimeline,
+                  name: "Event Storming",
+                  desc: "Domain events, commands, bounded contexts (DDD)",
+                  tag: "DDD",
+                  color: "#f59e0b",
+                },
+                {
+                  icon: TablerIcons.IconUser,
+                  name: "User Journey",
+                  desc: "Steps, decision points, and error states in a product",
+                  tag: "UX",
+                  color: "#10b981",
+                },
+                {
+                  icon: TablerIcons.IconGitBranch,
+                  name: "CI/CD Pipeline",
+                  desc: "Source → build → test → deploy → monitor",
+                  tag: "DevOps",
+                  color: "#8b5cf6",
+                },
+                {
+                  icon: TablerIcons.IconAlertTriangle,
+                  name: "Incident Response",
+                  desc: "Alert triggers, escalation paths, resolution steps",
+                  tag: "SRE",
+                  color: "#ef4444",
+                },
+                {
+                  icon: TablerIcons.IconShieldLock,
+                  name: "Auth Flow",
+                  desc: "OAuth, OIDC, JWT — client to auth server flows",
+                  tag: "Security",
+                  color: "#ec4899",
+                  hot: true,
+                },
+                {
+                  icon: TablerIcons.IconDatabase,
+                  name: "DB Migration Flow",
+                  desc: "Schema changes, rollbacks, dependency ordering",
+                  tag: "Infra",
+                  color: "#14b8a6",
+                },
+                {
+                  icon: TablerIcons.IconServer,
+                  name: "Deployment Topology",
+                  desc: "Blue/green, canary, rolling deployments visualized",
+                  tag: "Deploy",
+                  color: "#f97316",
+                },
               ].map((item) => (
-                <div key={item.name} className="flex items-start gap-2.5 px-3 py-2.5 mx-0.5 rounded-lg hover:bg-muted/60 transition-colors cursor-default">
-                  <div className="size-7 rounded-md flex items-center justify-center shrink-0 mt-0.5" style={{ background: `${item.color}18` }}>
-                    <item.icon size={14} stroke={1.5} style={{ color: item.color }} />
+                <div
+                  key={item.name}
+                  className="flex items-start gap-2.5 px-3 py-2.5 mx-0.5 rounded-lg hover:bg-muted/60 transition-colors cursor-default"
+                >
+                  <div
+                    className="size-7 rounded-md flex items-center justify-center shrink-0 mt-0.5"
+                    style={{ background: `${item.color}18` }}
+                  >
+                    <item.icon
+                      size={14}
+                      stroke={1.5}
+                      style={{ color: item.color }}
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[11.5px] font-semibold text-foreground leading-tight">{item.name}</span>
-                      {item.hot && <span className="text-[8px] font-bold text-primary">●</span>}
+                      <span className="text-[11.5px] font-semibold text-foreground leading-tight">
+                        {item.name}
+                      </span>
+                      {item.hot && (
+                        <span className="text-[8px] font-bold text-primary">
+                          ●
+                        </span>
+                      )}
                     </div>
-                    <div className="text-[10px] text-muted-foreground leading-snug mt-0.5">{item.desc}</div>
+                    <div className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                      {item.desc}
+                    </div>
                   </div>
-                  <span className="text-[8px] font-medium text-muted-foreground/60 bg-muted/80 px-1 py-0.5 rounded shrink-0 mt-0.5">{item.tag}</span>
+                  <span className="text-[8px] font-medium text-muted-foreground/60 bg-muted/80 px-1 py-0.5 rounded shrink-0 mt-0.5">
+                    {item.tag}
+                  </span>
                 </div>
               ))}
-              <div className="mx-3 mt-3 py-2 px-3 bg-muted/40 rounded-lg border border-border/30 flex items-center gap-2">
-                <TablerIcons.IconRocket size={11} className="text-muted-foreground/50 shrink-0 animate-pulse" />
-                <p className="text-[9px] text-muted-foreground/60 font-medium tracking-wider uppercase">Coming Soon</p>
+              <div className="mx-3 mt-3 py-2 px-3 bg-muted/40 rounded-xs border border-border/30 flex items-center gap-2">
+                <TablerIcons.IconRocket
+                  size={11}
+                  className="text-muted-foreground/50 shrink-0 animate-pulse"
+                />
+                <p className="text-[9px] text-muted-foreground/60 font-medium tracking-wider uppercase">
+                  Coming Soon
+                </p>
               </div>
             </div>
           )}
@@ -693,41 +869,149 @@ export default function Sidebar() {
             <div className="flex flex-col py-2 px-1 gap-1">
               <div className="px-3 pb-2">
                 <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  Standard technical shapes — the building blocks for flows and diagrams.
+                  Standard technical shapes — the building blocks for flows and
+                  diagrams.
                 </p>
               </div>
               {[
-                { icon: TablerIcons.IconSquareRounded, name: "Process", desc: "Rounded rectangle — the workhorse of flowcharts", tag: "Core", color: "#6366f1", hot: true },
-                { icon: TablerIcons.IconDiamond, name: "Decision", desc: "Diamond for yes/no branching logic", tag: "Core", color: "#f59e0b", hot: true },
-                { icon: TablerIcons.IconPill, name: "Terminator", desc: "Pill shape for start and end points", tag: "Core", color: "#10b981" },
-                { icon: TablerIcons.IconFileDescription, name: "Document", desc: "Rectangle with wavy bottom for reports/outputs", tag: "Output", color: "#0ea5e9" },
-                { icon: TablerIcons.IconLayoutRows, name: "Swimlane", desc: "Lanes showing which actor owns each step", tag: "Layout", color: "#6366f1", hot: true },
-                { icon: TablerIcons.IconCircleArrowRight, name: "Queue", desc: "Rectangle with curved ends for async buffers", tag: "Async", color: "#f97316", hot: true },
-                { icon: TablerIcons.IconCloud, name: "Cloud", desc: "Cloud outline for internet/external network", tag: "Network", color: "#0ea5e9" },
-                { icon: TablerIcons.IconSquare, name: "External Entity", desc: "Double-border rectangle for out-of-scope systems", tag: "External", color: "#8b5cf6" },
-                { icon: TablerIcons.IconLayoutColumns, name: "Data Store", desc: "Open-ended rectangle for DFD storage", tag: "Storage", color: "#ec4899" },
-                { icon: TablerIcons.IconNote, name: "Note / Annotation", desc: "Folded-corner rectangle for comments", tag: "Annotation", color: "#84cc16" },
-                { icon: TablerIcons.IconBuildingBroadcastTower, name: "Firewall", desc: "Brick wall shape for network security boundary", tag: "Security", color: "#ef4444" },
-                { icon: TablerIcons.IconMail, name: "Message", desc: "Envelope shape for async events and webhooks", tag: "Async", color: "#8b5cf6" },
-                { icon: TablerIcons.IconRepeat, name: "Loop", desc: "Represents iteration and retry patterns", tag: "Control", color: "#ef4444" },
+                {
+                  icon: TablerIcons.IconSquareRounded,
+                  name: "Process",
+                  desc: "Rounded rectangle — the workhorse of flowcharts",
+                  tag: "Core",
+                  color: "#6366f1",
+                  hot: true,
+                },
+                {
+                  icon: TablerIcons.IconDiamond,
+                  name: "Decision",
+                  desc: "Diamond for yes/no branching logic",
+                  tag: "Core",
+                  color: "#f59e0b",
+                  hot: true,
+                },
+                {
+                  icon: TablerIcons.IconPill,
+                  name: "Terminator",
+                  desc: "Pill shape for start and end points",
+                  tag: "Core",
+                  color: "#10b981",
+                },
+                {
+                  icon: TablerIcons.IconFileDescription,
+                  name: "Document",
+                  desc: "Rectangle with wavy bottom for reports/outputs",
+                  tag: "Output",
+                  color: "#0ea5e9",
+                },
+                {
+                  icon: TablerIcons.IconLayoutRows,
+                  name: "Swimlane",
+                  desc: "Lanes showing which actor owns each step",
+                  tag: "Layout",
+                  color: "#6366f1",
+                  hot: true,
+                },
+                {
+                  icon: TablerIcons.IconCircleArrowRight,
+                  name: "Queue",
+                  desc: "Rectangle with curved ends for async buffers",
+                  tag: "Async",
+                  color: "#f97316",
+                  hot: true,
+                },
+                {
+                  icon: TablerIcons.IconCloud,
+                  name: "Cloud",
+                  desc: "Cloud outline for internet/external network",
+                  tag: "Network",
+                  color: "#0ea5e9",
+                },
+                {
+                  icon: TablerIcons.IconSquare,
+                  name: "External Entity",
+                  desc: "Double-border rectangle for out-of-scope systems",
+                  tag: "External",
+                  color: "#8b5cf6",
+                },
+                {
+                  icon: TablerIcons.IconLayoutColumns,
+                  name: "Data Store",
+                  desc: "Open-ended rectangle for DFD storage",
+                  tag: "Storage",
+                  color: "#ec4899",
+                },
+                {
+                  icon: TablerIcons.IconNote,
+                  name: "Note / Annotation",
+                  desc: "Folded-corner rectangle for comments",
+                  tag: "Annotation",
+                  color: "#84cc16",
+                },
+                {
+                  icon: TablerIcons.IconBuildingBroadcastTower,
+                  name: "Firewall",
+                  desc: "Brick wall shape for network security boundary",
+                  tag: "Security",
+                  color: "#ef4444",
+                },
+                {
+                  icon: TablerIcons.IconMail,
+                  name: "Message",
+                  desc: "Envelope shape for async events and webhooks",
+                  tag: "Async",
+                  color: "#8b5cf6",
+                },
+                {
+                  icon: TablerIcons.IconRepeat,
+                  name: "Loop",
+                  desc: "Represents iteration and retry patterns",
+                  tag: "Control",
+                  color: "#ef4444",
+                },
               ].map((item) => (
-                <div key={item.name} className="flex items-start gap-2.5 px-3 py-2.5 mx-0.5 rounded-lg hover:bg-muted/60 transition-colors cursor-default">
-                  <div className="size-7 rounded-md flex items-center justify-center shrink-0 mt-0.5" style={{ background: `${item.color}18` }}>
-                    <item.icon size={14} stroke={1.5} style={{ color: item.color }} />
+                <div
+                  key={item.name}
+                  className="flex items-start gap-2.5 px-3 py-2.5 mx-0.5 rounded-lg hover:bg-muted/60 transition-colors cursor-default"
+                >
+                  <div
+                    className="size-7 rounded-md flex items-center justify-center shrink-0 mt-0.5"
+                    style={{ background: `${item.color}18` }}
+                  >
+                    <item.icon
+                      size={14}
+                      stroke={1.5}
+                      style={{ color: item.color }}
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[11.5px] font-semibold text-foreground leading-tight">{item.name}</span>
-                      {item.hot && <span className="text-[8px] font-bold text-primary">●</span>}
+                      <span className="text-[11.5px] font-semibold text-foreground leading-tight">
+                        {item.name}
+                      </span>
+                      {item.hot && (
+                        <span className="text-[8px] font-bold text-primary">
+                          ●
+                        </span>
+                      )}
                     </div>
-                    <div className="text-[10px] text-muted-foreground leading-snug mt-0.5">{item.desc}</div>
+                    <div className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                      {item.desc}
+                    </div>
                   </div>
-                  <span className="text-[8px] font-medium text-muted-foreground/60 bg-muted/80 px-1 py-0.5 rounded shrink-0 mt-0.5">{item.tag}</span>
+                  <span className="text-[8px] font-medium text-muted-foreground/60 bg-muted/80 px-1 py-0.5 rounded shrink-0 mt-0.5">
+                    {item.tag}
+                  </span>
                 </div>
               ))}
-              <div className="mx-3 mt-3 py-2 px-3 bg-muted/40 rounded-lg border border-border/30 flex items-center gap-2">
-                <TablerIcons.IconRocket size={11} className="text-muted-foreground/50 shrink-0 animate-pulse" />
-                <p className="text-[9px] text-muted-foreground/60 font-medium tracking-wider uppercase">Coming Soon</p>
+              <div className="mx-3 mt-3 py-2 px-3 bg-muted/40 rounded-xs border border-border/30 flex items-center gap-2">
+                <TablerIcons.IconRocket
+                  size={11}
+                  className="text-muted-foreground/50 shrink-0 animate-pulse"
+                />
+                <p className="text-[9px] text-muted-foreground/60 font-medium tracking-wider uppercase">
+                  Coming Soon
+                </p>
               </div>
             </div>
           )}
@@ -747,7 +1031,7 @@ export default function Sidebar() {
                 description: "Double-click to name",
               }}
             />
-            <div className="my-2 px-3 py-2 bg-primary/5 rounded-lg border border-primary/10 mx-2">
+            <div className="my-2 px-3 py-2 bg-primary/5 rounded-xs border border-primary/10 mx-2">
               {/* <h2 className="text-sm font-bold">Delete items?</h2> */}
               <p className="text-[10px] text-primary-700 dark:text-primary-300">
                 {" "}
@@ -781,9 +1065,9 @@ export default function Sidebar() {
           className="fixed z-50"
           style={{
             left: isCollapsed ? 52 + 8 : 52 + 260 + 8,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            maxHeight: 'calc(100vh - 48px)',
+            top: "50%",
+            transform: "translateY(-50%)",
+            maxHeight: "calc(100vh - 48px)",
           }}
         >
           <AIPanel onClose={() => setShowAIPanel(false)} />
