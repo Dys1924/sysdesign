@@ -1,10 +1,10 @@
 import { useState } from "react";
+import { IconFolderPlus, IconX, IconFolder } from "@tabler/icons-react";
 import {
-  IconFolderPlus,
-  IconX,
-  IconFolder,
-} from "@tabler/icons-react";
-import { useProjectStore, MAX_PROJECTS, type ProjectType } from "../../store/project.store";
+  useProjectStore,
+  MAX_PROJECTS,
+  type ProjectType,
+} from "../../store/project.store";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
@@ -56,8 +56,8 @@ export default function ProjectSetupPopup({
   };
 
   return (
-    <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-sm px-4">
-      <div className="bg-card border border-border rounded-2xl shadow-2xl shadow-black/10 animate-in slide-in-from-top-4 fade-in duration-300 p-5 flex flex-col gap-5">
+    <div className="fixed top-24 left-1/2 -translate-x-1/2 z-1000 w-full max-w-sm px-4">
+      <div className="bg-card border border-border rounded-xs shadow-2xl shadow-black/10 animate-in slide-in-from-top-4 fade-in duration-300 p-5 flex flex-col gap-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
@@ -91,7 +91,7 @@ export default function ProjectSetupPopup({
 
           <div className="flex flex-col gap-1.5">
             <Label>Project Type</Label>
-            <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-lg border border-border/50">
+            <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-xs border border-border/50">
               <button
                 type="button"
                 onClick={() => setType("design")}

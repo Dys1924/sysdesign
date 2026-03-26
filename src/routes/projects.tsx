@@ -48,7 +48,11 @@ function ProjectsPage() {
 
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
 
-  const handleCreateProject = (name: string, type: ProjectType, description?: string) => {
+  const handleCreateProject = (
+    name: string,
+    type: ProjectType,
+    description?: string,
+  ) => {
     const newProject = createProject(name, type, description);
     if (!newProject) return;
     setModalOpen(false);
@@ -138,19 +142,23 @@ function ProjectsPage() {
               />
             </div>
 
-            <div className="flex items-center bg-card border border-border rounded-lg p-1">
-              <button
+            <div className="flex items-center bg-card border border-border rounded-xs p-1">
+              <Button
                 onClick={() => setView("grid")}
-                className={`p-1.5 rounded-md transition-all ${view === "grid" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                variant={"ghost"}
+                size={"icon"}
+                className={`transition-all ${view === "grid" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
                 <IconLayoutGrid size={18} stroke={1.5} />
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => setView("list")}
-                className={`p-1.5 rounded-md transition-all ${view === "list" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                variant={"ghost"}
+                size={"icon"}
+                className={`transition-all ${view === "list" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
                 <IconLayoutList size={18} stroke={1.5} />
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -160,35 +168,40 @@ function ProjectsPage() {
               {filtered.map((p) => (
                 <div
                   key={p.id}
-                  className="group relative flex flex-col gap-4 p-5 bg-card border border-border rounded-xl hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all"
+                  className="group relative flex flex-col gap-4 p-5 bg-card border border-border rounded-xs hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex flex-col gap-1 items-start">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary transition-transform group-hover:scale-110">
-                        <IconFolder size={20} stroke={1.8} />
-                      </div>
-                      <div className={cn(
-                        "mt-2 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider flex items-center gap-1",
-                        p.type === 'c4' ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                      )}>
-                        {p.type === 'c4' ? <IconSitemap size={10} /> : <IconVectorBezier2 size={10} />}
-                        {p.type === 'c4' ? 'C4 Model' : 'Architecture'}
+                      <div
+                        className={cn(
+                          "mt-2 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider flex items-center gap-1",
+                          // p.type === "c4"
+                          //   ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                          //   : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                        )}
+                      >
+                        {p.type === "c4" ? (
+                          <IconSitemap size={10} />
+                        ) : (
+                          <IconVectorBezier2 size={10} />
+                        )}
+                        {p.type === "c4" ? "C4 Model" : "Architecture"}
                       </div>
                     </div>
-                    <button
+                    <Button
                       onClick={() => handleDeleteRequest(p)}
-                      className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-all opacity-0 group-hover:opacity-100"
+                      className="border="
                       title="Delete project"
+                      variant={"destructive"}
+                      size={"icon"}
                     >
                       <IconTrash size={16} />
-                    </button>
+                    </Button>
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <h3 className="font-semibold text-foreground tracking-tight group-hover:text-primary transition-colors">
-                      {p.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 min-h-[40px]">
+                    <h3>{p.name}</h3>
+                    <p className="line-clamp-2 min-h-[40px]">
                       {p.description || "No description provided."}
                     </p>
                   </div>
@@ -212,7 +225,7 @@ function ProjectsPage() {
             </div>
           ) : (
             /* List View */
-            <div className="flex flex-col border border-border rounded-xl bg-card overflow-hidden">
+            <div className="flex flex-col border border-border rounded-xs bg-card overflow-hidden">
               {filtered.map((p, idx) => (
                 <div
                   key={p.id}
@@ -220,14 +233,15 @@ function ProjectsPage() {
                 >
                   <div className="flex items-center gap-4 flex-1">
                     <div className="flex flex-col items-center gap-1">
-                      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                        <IconFolder size={18} stroke={1.8} />
-                      </div>
-                      <span className={cn(
-                        "px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-tight",
-                        p.type === 'c4' ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                      )}>
-                        {p.type === 'c4' ? 'C4' : 'ARCH'}
+                      <span
+                        className={cn(
+                          "px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-tight",
+                          p.type === "c4"
+                            ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                            : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                        )}
+                      >
+                        {p.type === "c4" ? "C4" : "ARCH"}
                       </span>
                     </div>
                     <div className="flex flex-col">
@@ -249,17 +263,20 @@ function ProjectsPage() {
                       <Link
                         to="/$slug"
                         params={{ slug: p.slug }}
-                        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 transition-all"
+                        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xs text-xs font-bold text-primary hover:bg-primary/10 transition-all"
                       >
                         Open
                         <IconArrowRight size={14} />
                       </Link>
-                      <button
+                      <Button
                         onClick={() => handleDeleteRequest(p)}
-                        className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-all"
+                        className="border="
+                        title="Delete project"
+                        variant={"destructive"}
+                        size={"icon"}
                       >
                         <IconTrash size={16} />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
