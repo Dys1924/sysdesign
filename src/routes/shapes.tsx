@@ -10,7 +10,7 @@ function ShapesPage() {
   return (
     <ComingSoon
       title="Infinite Geometry Library"
-      description="Expand your design possibilities with our upcoming library of polymorphic shapes and architectural icons. Optimized for SVG high-fidelity exports and custom branding."
+      description="Process, decision, swimlane, queue shapes and more — the full technical shape library is currently being built."
       icon={IconShape}
     />
   );

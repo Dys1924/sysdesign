@@ -10,7 +10,7 @@ function FlowsPage() {
   return (
     <ComingSoon
       title="Dynamic Flow Architect"
-      description="Advanced sequence modeling and entity relationship visualization are in progress. Our upcoming flow engine will support real-time traffic simulation and latency analysis."
+      description="Sequence diagrams, data flows, event storming, CI/CD pipelines and more — advanced flow types are currently in development."
       icon={IconHierarchy}
     />
   );

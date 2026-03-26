@@ -1,6 +1,6 @@
 import type { DiagramNode, DiagramEdge } from "../../types/diagram";
 
-// ─── Layout constants ──────────────────────────────────────────────────────
+//  Layout constants
 const NODE_W = 170;
 const NODE_H = 80;
 const PAD_X = 40;
@@ -23,7 +23,7 @@ function groupStyle(color: string, bg: string) {
   };
 }
 
-// ─── Column X positions ────────────────────────────────────────────────────
+//  Column X positions ─
 const G_CLIENTS_X = 0;
 const G_CLIENTS_W = groupW(1);
 
@@ -39,7 +39,7 @@ const G_DATA_W = groupW(1);
 const G_INFRA_X = G_CORE_X;
 const G_INFRA_W = groupW(2);
 
-// ─── Row Y positions ──────────────────────────────────────────────────────
+//  Row Y positions
 const ROW1_Y = 0;
 const ROW2_Y = ROW1_Y + groupH(4) + 180;
 
@@ -56,7 +56,7 @@ export const WHATSAPP_TEMPLATE: {
     "Real-time messaging at 2B+ users — XMPP protocol, Erlang chat servers, Mnesia storage, and end-to-end encryption.",
 
   nodes: [
-    // ── GROUP: Clients ────────────────────────────────────────────────────
+    // ── GROUP: Clients ─
     {
       id: "g-clients",
       type: "group",
@@ -117,7 +117,7 @@ export const WHATSAPP_TEMPLATE: {
       },
     },
 
-    // ── GROUP: Gateway Layer ──────────────────────────────────────────────
+    // ── GROUP: Gateway Layer ─
     {
       id: "g-gateway",
       type: "group",
@@ -192,7 +192,7 @@ export const WHATSAPP_TEMPLATE: {
       },
     },
 
-    // ── GROUP: Core Services ──────────────────────────────────────────────
+    // ── GROUP: Core Services ─
     {
       id: "g-core",
       type: "group",
@@ -267,7 +267,7 @@ export const WHATSAPP_TEMPLATE: {
       },
     },
 
-    // ── GROUP: Data Layer ─────────────────────────────────────────────────
+    // ── GROUP: Data Layer ─
     {
       id: "g-data",
       type: "group",
@@ -342,7 +342,7 @@ export const WHATSAPP_TEMPLATE: {
       },
     },
 
-    // ── GROUP: Infrastructure (bottom row) ────────────────────────────────
+    // ── GROUP: Infrastructure (bottom row) ──
     {
       id: "g-infra",
       type: "group",
@@ -389,7 +389,7 @@ export const WHATSAPP_TEMPLATE: {
       },
     },
 
-    // ── Standalone: E2E Encryption ────────────────────────────────────────
+    // ── Standalone: E2E Encryption ─
     {
       id: "n-e2e",
       type: "diagram",

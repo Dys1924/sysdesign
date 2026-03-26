@@ -1,6 +1,6 @@
 import type { DiagramNode, DiagramEdge } from "../../types/diagram";
 
-// ─── Layout constants ──────────────────────────────────────────────────────
+//  Layout constants
 // Node: 170w × 80h  |  Group padding: 40px sides, 50px top, 40px bottom
 // Column gap: 220px |  Row gap: 24px inside groups
 
@@ -12,7 +12,7 @@ const PAD_B = 40;
 const ROW_GAP = 20;
 const COL_GAP = 220;
 
-// ─── Group sizing helpers ──────────────────────────────────────────────────
+//  Group sizing helpers
 function groupH(rows: number) {
   return PAD_Y + rows * NODE_H + (rows - 1) * ROW_GAP + PAD_B;
 }
@@ -20,7 +20,7 @@ function groupW(cols: number) {
   return PAD_X + cols * NODE_W + (cols - 1) * 24 + PAD_X;
 }
 
-// ─── Column X positions ────────────────────────────────────────────────────
+//  Column X positions ─
 // Col 0: Clients  Col 1: Gateway  Col 2: Core Services  Col 3: Data  Col 4: Encoding
 const G_CLIENTS_X = 0;
 const G_CLIENTS_W = groupW(1);
@@ -37,12 +37,12 @@ const G_DATA_W = groupW(1);
 const G_ENCODE_X = G_CORE_X;
 const G_CDN_X = G_CLIENTS_X;
 
-// ─── Row Y positions ──────────────────────────────────────────────────────
+//  Row Y positions
 const ROW1_Y = 0; // Clients group top
 const ROW2_Y = ROW1_Y + groupH(3) + 200; // Encoding pipeline below
 const CDN_Y = ROW2_Y; // CDN sits at same level as encoding, left side
 
-// ─── Shared group style builder ───────────────────────────────────────────
+//  Shared group style builder
 function groupStyle(color: string, bg: string): React.CSSProperties {
   return {
     backgroundColor: bg,
@@ -64,7 +64,7 @@ export const NETFLIX_TEMPLATE: {
     "Video streaming at global scale — Zuul gateway, Eureka discovery, Open Connect CDN, and the encoding pipeline.",
 
   nodes: [
-    // ── GROUP: Client Applications ────────────────────────────────────────
+    // ── GROUP: Client Applications
     {
       id: "g-clients",
       type: "group",
@@ -125,7 +125,7 @@ export const NETFLIX_TEMPLATE: {
       },
     },
 
-    // ── Standalone: Zuul API Gateway ──────────────────────────────────────
+    // ── Standalone: Zuul API Gateway ─
     {
       id: "n-zuul",
       type: "diagram",
@@ -142,7 +142,7 @@ export const NETFLIX_TEMPLATE: {
       },
     },
 
-    // ── Standalone: Eureka Service Discovery ──────────────────────────────
+    // ── Standalone: Eureka Service Discovery ─
     {
       id: "n-eureka",
       type: "diagram",
@@ -156,7 +156,7 @@ export const NETFLIX_TEMPLATE: {
       },
     },
 
-    // ── GROUP: Core Services ──────────────────────────────────────────────
+    // ── GROUP: Core Services
     {
       id: "g-core",
       type: "group",
@@ -231,7 +231,7 @@ export const NETFLIX_TEMPLATE: {
       },
     },
 
-    // ── GROUP: Data Layer ─────────────────────────────────────────────────
+    // ── GROUP: Data Layer
     {
       id: "g-data",
       type: "group",
@@ -306,7 +306,7 @@ export const NETFLIX_TEMPLATE: {
       },
     },
 
-    // ── GROUP: Encoding Pipeline (bottom row) ─────────────────────────────
+    // ── GROUP: Encoding Pipeline (bottom row)
     {
       id: "g-encode",
       type: "group",
@@ -367,7 +367,7 @@ export const NETFLIX_TEMPLATE: {
       },
     },
 
-    // ── Standalone: Open Connect CDN ──────────────────────────────────────
+    // ── Standalone: Open Connect CDN ─
     {
       id: "n-cdn",
       type: "diagram",
@@ -381,7 +381,7 @@ export const NETFLIX_TEMPLATE: {
       },
     },
 
-    // ── Standalone: Kafka Event Bus ───────────────────────────────────────
+    // ── Standalone: Kafka Event Bus ──
     {
       id: "n-kafka",
       type: "diagram",
@@ -395,7 +395,7 @@ export const NETFLIX_TEMPLATE: {
       },
     },
 
-    // ── Standalone: Observability ─────────────────────────────────────────
+    // ── Standalone: Observability ─
     {
       id: "n-atlas",
       type: "diagram",

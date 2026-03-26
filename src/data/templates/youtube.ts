@@ -1,6 +1,6 @@
 import type { DiagramNode, DiagramEdge } from "../../types/diagram";
 
-// ─── Layout constants ──────────────────────────────────────────────────────
+//  Layout constants
 const NODE_W = 170;
 const NODE_H = 80;
 const PAD_X = 40;
@@ -23,7 +23,7 @@ function groupStyle(color: string, bg: string) {
   };
 }
 
-// ─── Column X positions ────────────────────────────────────────────────────
+//  Column X positions ─
 const G_CLIENTS_X = 0;
 const G_CLIENTS_W = groupW(1);
 
@@ -41,7 +41,7 @@ const G_UPLOAD_W = groupW(2);
 
 const G_CDN_X = G_CLIENTS_X;
 
-// ─── Row Y positions ──────────────────────────────────────────────────────
+//  Row Y positions
 const ROW1_Y = 0;
 const ROW2_Y = ROW1_Y + groupH(5) + 180;
 
@@ -58,7 +58,7 @@ export const YOUTUBE_TEMPLATE: {
     "Video upload, transcoding, and delivery at 500 hours of video per minute — GCS, Bigtable, Spanner, and Google CDN.",
 
   nodes: [
-    // ── GROUP: Clients ────────────────────────────────────────────────────
+    // ── GROUP: Clients ─
     {
       id: "g-clients",
       type: "group",
@@ -133,7 +133,7 @@ export const YOUTUBE_TEMPLATE: {
       },
     },
 
-    // ── Standalone: Load Balancer + API Gateway ───────────────────────────
+    // ── Standalone: Load Balancer + API Gateway
     {
       id: "n-lb",
       type: "diagram",
@@ -159,7 +159,7 @@ export const YOUTUBE_TEMPLATE: {
       },
     },
 
-    // ── GROUP: Core Services ──────────────────────────────────────────────
+    // ── GROUP: Core Services ─
     {
       id: "g-core",
       type: "group",
@@ -248,7 +248,7 @@ export const YOUTUBE_TEMPLATE: {
       },
     },
 
-    // ── GROUP: Data Layer ─────────────────────────────────────────────────
+    // ── GROUP: Data Layer ─
     {
       id: "g-data",
       type: "group",
@@ -337,7 +337,7 @@ export const YOUTUBE_TEMPLATE: {
       },
     },
 
-    // ── GROUP: Upload & Transcoding Pipeline (bottom) ─────────────────────
+    // ── GROUP: Upload & Transcoding Pipeline (bottom)
     {
       id: "g-upload",
       type: "group",
@@ -384,7 +384,7 @@ export const YOUTUBE_TEMPLATE: {
       },
     },
 
-    // ── Standalone: GCS Encoded + CDN ─────────────────────────────────────
+    // ── Standalone: GCS Encoded + CDN ─
     {
       id: "n-gcs-out",
       type: "diagram",
@@ -410,7 +410,7 @@ export const YOUTUBE_TEMPLATE: {
       },
     },
 
-    // ── Standalone: Pub/Sub Event Bus ─────────────────────────────────────
+    // ── Standalone: Pub/Sub Event Bus ─
     {
       id: "n-pubsub",
       type: "diagram",
@@ -424,7 +424,7 @@ export const YOUTUBE_TEMPLATE: {
       },
     },
 
-    // ── Standalone: Vertex AI ─────────────────────────────────────────────
+    // ── Standalone: Vertex AI
     {
       id: "n-vertex",
       type: "diagram",

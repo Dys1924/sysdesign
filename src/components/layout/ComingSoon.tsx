@@ -9,13 +9,17 @@ interface ComingSoonProps {
   icon: React.ElementType;
 }
 
-export default function ComingSoon({ title, description, icon: Icon }: ComingSoonProps) {
+export default function ComingSoon({
+  title,
+  description,
+  icon: Icon,
+}: ComingSoonProps) {
   const navigate = useNavigate();
 
   return (
     <div className="flex-1 flex h-full overflow-hidden">
       <Sidebar />
-      
+
       <main className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500 bg-background">
         <div className="relative mb-8">
           <div className="size-20 rounded-[--radius] bg-primary/10 flex items-center justify-center text-primary">
@@ -33,27 +37,9 @@ export default function ComingSoon({ title, description, icon: Icon }: ComingSoo
           {description}
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <Button
-            onClick={() => window.history.back()}
-            variant="outline"
-            className="rounded-[--radius] gap-2 h-10 px-6"
-          >
-            <IconArrowLeft size={16} />
-            Go Back
-          </Button>
-          <Button
-            onClick={() => navigate({ to: "/" })}
-            variant="default"
-            className="rounded-[--radius] h-10 px-6"
-          >
-            Return to Editor
-          </Button>
-        </div>
-
         <div className="mt-16 pt-8 border-t border-border w-full max-w-xs opacity-40">
           <div className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground">
-            Feature in Development
+            Feature in Testing
           </div>
         </div>
       </main>

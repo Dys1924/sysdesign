@@ -388,21 +388,22 @@ export default function DiagramCanvas() {
               </div>
 
               <div className="mt-5 pt-4 border-t border-border/40">
-                <button
+                <Button
                   onClick={toggleHint}
-                  className="w-full py-1.5 text-[10px] font-bold bg-muted/50 hover:bg-primary hover:text-white rounded-lg transition-all cursor-pointer"
+                  variant="outline"
+                  className={"w-full"}
                 >
                   Hide for now
-                </button>
+                </Button>
               </div>
             </div>
           </div>
         )}
 
-        <button
+        <Button
           onClick={toggleHint}
           className={cn(
-            "p-3 rounded-none shadow-lg border backdrop-blur-md transition-all duration-300 pointer-events-auto cursor-pointer",
+            "p-3 rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 pointer-events-auto cursor-pointer",
             showHint
               ? "bg-primary text-white border-primary translate-x-12 opacity-0"
               : "bg-card text-muted-foreground hover:text-foreground border-border hover:border-primary/50 hover:shadow-primary/10",
@@ -410,7 +411,7 @@ export default function DiagramCanvas() {
           title="Show Navigation Tips"
         >
           <IconInfoCircle size={22} />
-        </button>
+        </Button>
       </div>
     </div>
   );

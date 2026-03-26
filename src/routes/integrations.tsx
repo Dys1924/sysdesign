@@ -10,7 +10,7 @@ function IntegrationsPage() {
   return (
     <ComingSoon
       title="Integrations Hub"
-      description="Connect SysDesign to your existing infrastructure stack. Terraform, CloudFormation, and Pulumi sync are currently being optimized for high-performance enterprise architectures."
+      description="Connect SysDesign to your existing infrastructure stack. GitHub, Supabase, AWS, Kubernetes and more — currently being optimized."
       icon={IconPuzzle}
     />
   );
