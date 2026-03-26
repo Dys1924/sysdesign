@@ -259,6 +259,8 @@ async function syncFromSupabase() {
 
   if (error) {
     console.error("Error fetching Supabase projects:", error.message);
+    // Always clear loading even on error — otherwise the spinner gets stuck
+    projectStore.setState((s: ProjectState) => ({ ...s, loading: false, migrating: false }));
     return;
   }
 
@@ -313,6 +315,20 @@ async function syncFromSupabase() {
 
 // Initial session check
 if (typeof window !== "undefined") {
+  // Safety timeout: if auth/sync hangs for > 5s, force-clear the loading state
+  const loadingTimeout = setTimeout(() => {
+    if (projectStore.state.loading) {
+      console.warn("[SysDesign] Loading timed out — clearing loading state");
+      const local = load();
+      projectStore.setState((s: ProjectState) => ({
+        ...s,
+        ...local,
+        loading: false,
+        migrating: false,
+      }));
+    }
+  }, 5000);
+
   supabase.auth.getSession().then(({ data: { session } }) => {
     projectStore.setState((s) => ({
       ...s,
@@ -322,10 +338,15 @@ if (typeof window !== "undefined") {
     }));
 
     if (session) {
-      syncFromSupabase();
+      syncFromSupabase().finally(() => clearTimeout(loadingTimeout));
     } else {
+      clearTimeout(loadingTimeout);
       projectStore.setState((s: ProjectState) => ({ ...s, loading: false }));
     }
+  }).catch(() => {
+    clearTimeout(loadingTimeout);
+    const local = load();
+    projectStore.setState((s: ProjectState) => ({ ...s, ...local, loading: false }));
   });
 
   supabase.auth.onAuthStateChange((_event, session) => {
