@@ -57,6 +57,12 @@ export const PROVIDER_META: Record<
   },
 };
 
+/** Mask an API key like a credit card: first 6 chars + … + last 4 chars */
+export function maskKey(key: string): string {
+  if (key.length <= 10) return "••••••••••";
+  return `${key.slice(0, 6)}••••••••••${key.slice(-4)}`;
+}
+
 export const aiStore = new Store<AIState>({
   keys: loadKeys(),
   pendingPrompt: "",
