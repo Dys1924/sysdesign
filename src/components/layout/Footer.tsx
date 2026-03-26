@@ -13,7 +13,7 @@ export default function Footer() {
   return (
     <footer className="h-10 border-t bg-card/50 backdrop-blur-sm px-4 flex items-center justify-between shrink-0 z-50">
       <div className="flex items-center gap-2 text-[10.5px] text-muted-foreground font-medium select-none">
-        <span>&copy; {currentYear} Sysdesign 0.0.1.</span>
+        <span>&copy; {currentYear} Sysdesign 0.0.2.</span>
         <span className="opacity-40">|</span>
         <div className="flex items-center gap-3">
           <Link
