@@ -18,7 +18,7 @@ import {
 import { useNavigate, useLocation } from "@tanstack/react-router";
 import ConfirmModal from "../ui/ConfirmModal";
 import { setDiagramMode, clearCanvas } from "../../store/canvas.store";
-import { useAIKeys } from "../../store/ai.store";
+import { setPrompt as setAIPrompt, useAIKeys } from "../../store/ai.store";
 import AIPanel from "../ai/AIPanel";
 import AISettings from "../ai/AISettings";
 
@@ -256,21 +256,14 @@ export default function Sidebar() {
                 setShowAIPanel(false);
                 return;
               }
-              // Navigate back to the canvas the user was on, then open panel
+              // Force Architecture mode for Templates
               if (activeProject) {
-                if (diagramMode === "c4") {
-                  navigate({
-                    to: "/$slug/c4",
-                    params: { slug: activeProject.slug } as any,
-                  });
-                  setActiveTab("c4");
-                } else {
-                  navigate({
-                    to: "/$slug",
-                    params: { slug: activeProject.slug } as any,
-                  });
-                  setActiveTab("components");
-                }
+                setDiagramMode("architecture");
+                navigate({
+                  to: "/$slug",
+                  params: { slug: activeProject.slug } as any,
+                });
+                setActiveTab("components");
               }
               setShowAIPanel(true);
               return;
@@ -345,7 +338,7 @@ export default function Sidebar() {
           label="Architecture"
         />
         <RailIcon id="c4" icon={TablerIcons.IconSitemap} label="C4 Model" />
-        <RailIcon id="templates" icon={TablerIcons.IconSparkles} label="AI" />
+        <RailIcon id="templates" icon={TablerIcons.IconSparkles} label="Templates" />
         <RailIcon
           id="integrations"
           icon={TablerIcons.IconPuzzle}
@@ -532,7 +525,7 @@ export default function Sidebar() {
                   </div>
 
                   {/* Grouping hint */}
-                  <div className="mx-3 mt-4 py-2.5 px-3 bg-muted/40 rounded-lg border border-border/30">
+                  <div className="mx-3 mt-4 py-2.5 px-3 bg-muted/40 rounded-xs border border-border/30">
                     <div className="flex items-center gap-1.5 mb-1">
                       <TablerIcons.IconSelect
                         size={12}
@@ -599,18 +592,79 @@ export default function Sidebar() {
             })}
 
           {activeTab === "templates" && (
-            <div className="px-4 py-8 text-center flex flex-col items-center text-muted-foreground">
-              <TablerIcons.IconSparkles
-                size={24}
-                stroke={1}
-                className="mb-2 opacity-20"
-              />
-              <p className="text-[11px] font-medium mb-1">
-                No AI key configured
-              </p>
-              <p className="text-[10px] text-muted-foreground/70">
-                Go to Settings to add your API key.
-              </p>
+            <div className="flex flex-col py-2 px-1 gap-1">
+              <div className="px-3 pb-3">
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  {activeProject?.type === "c4" 
+                    ? "Select a C4 model template to start your hierarchical system design."
+                    : "Select an architecture template to jumpstart your cloud or microservice design."}
+                </p>
+              </div>
+              {(activeProject?.type === "c4" ? [
+                {
+                  icon: TablerIcons.IconSitemap,
+                  label: "Online banking system",
+                  prompt: "Create a C4 model for an online banking system with customers, mobile app, web portal, and backend services"
+                },
+                {
+                  icon: TablerIcons.IconListDetails,
+                  label: "SaaS platform",
+                  prompt: "Create a C4 model for a SaaS project management platform with web app, API, database, and email service"
+                },
+                {
+                  icon: TablerIcons.IconBulb,
+                  label: "Healthcare system",
+                  prompt: "Create a C4 model for a healthcare system with patients, doctors, appointment service, and EHR"
+                }
+              ] : [
+                {
+                  icon: TablerIcons.IconSitemap,
+                  label: "E-commerce microservices",
+                  prompt: "Design an e-commerce system with product catalog, cart, checkout, payment, and order services"
+                },
+                {
+                  icon: TablerIcons.IconListDetails,
+                  label: "Real-time chat app",
+                  prompt: "Design a real-time chat application with WebSocket, message queue, and presence service"
+                },
+                {
+                  icon: TablerIcons.IconBulb,
+                  label: "API-first SaaS backend",
+                  prompt: "Design an API-first SaaS backend with authentication, billing, multi-tenancy, and webhooks"
+                },
+                {
+                  icon: TablerIcons.IconMessageQuestion,
+                  label: "Data pipeline",
+                  prompt: "Design a data ingestion pipeline with Kafka, stream processing, and analytics storage"
+                }
+              ]).map((item) => (
+                <button
+                  key={item.label}
+                  onClick={() => {
+                    if (!activeProject) return;
+                    const mode = activeProject.type === "c4" ? "c4" : "architecture";
+                    const path = mode === "c4" ? `/${activeProject.slug}/c4` : `/${activeProject.slug}`;
+                    
+                    setDiagramMode(mode);
+                    setAIPrompt(item.prompt);
+                    navigate({ to: path as any });
+                    setShowAIPanel(true);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 mx-0.5 rounded-lg hover:bg-muted/60 text-left transition-colors group"
+                >
+                  <div className="p-1.5 bg-muted rounded-md shrink-0 group-hover:bg-primary/10 transition-colors">
+                    <item.icon size={14} className="text-muted-foreground group-hover:text-primary transition-colors" stroke={1.5} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[12px] font-medium text-foreground leading-tight truncate">
+                      {item.label}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground leading-tight mt-0.5 truncate">
+                      {item.prompt}
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
           )}
 

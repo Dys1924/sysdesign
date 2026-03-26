@@ -1,101 +1,119 @@
-import { useState, useEffect } from 'react'
+import { Store } from "@tanstack/store";
+import { useState, useEffect } from "react";
 
-export type AIProvider = 'openai' | 'anthropic' | 'google'
+export type AIProvider = "openai" | "anthropic" | "google";
 
 export interface AIKey {
-  provider: AIProvider
-  key: string
-  addedAt: string
+  provider: AIProvider;
+  key: string;
+  addedAt: string;
 }
 
-const STORAGE_KEY = 'sysdesign-ai-keys'
+interface AIState {
+  keys: AIKey[];
+  pendingPrompt: string;
+}
+
+const STORAGE_KEY = "sysdesign-ai-keys";
 
 function loadKeys(): AIKey[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
+    if (typeof window === "undefined") return [];
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
   } catch {
-    return []
+    return [];
   }
 }
 
 function saveKeys(keys: AIKey[]) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(keys))
+    if (typeof window === "undefined") return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(keys));
   } catch {}
 }
 
-/** Mask an API key like a credit card: first 6 chars + … + last 4 chars */
-export function maskKey(key: string): string {
-  if (key.length <= 10) return '••••••••••'
-  return `${key.slice(0, 6)}••••••••••${key.slice(-4)}`
-}
-
-export const PROVIDER_META: Record<AIProvider, { label: string; placeholder: string; prefix: string; color: string }> = {
+export const PROVIDER_META: Record<
+  AIProvider,
+  { label: string; placeholder: string; prefix: string; color: string }
+> = {
   openai: {
-    label: 'OpenAI',
-    placeholder: 'sk-proj-...',
-    prefix: 'sk-',
-    color: '#10a37f',
+    label: "OpenAI",
+    placeholder: "sk-proj-...",
+    prefix: "sk-",
+    color: "#10a37f",
   },
   anthropic: {
-    label: 'Claude (Anthropic)',
-    placeholder: 'sk-ant-...',
-    prefix: 'sk-ant-',
-    color: '#c96b3f',
+    label: "Claude (Anthropic)",
+    placeholder: "sk-ant-...",
+    prefix: "sk-ant-",
+    color: "#c96b3f",
   },
   google: {
-    label: 'Gemini (Google)',
-    placeholder: 'AIza...',
-    prefix: 'AIza',
-    color: '#4285F4',
+    label: "Gemini (Google)",
+    placeholder: "AIza...",
+    prefix: "AIza",
+    color: "#4285F4",
   },
-}
+};
 
-// ── Exported CRUD helpers ──────────────────────────────────────────
+export const aiStore = new Store<AIState>({
+  keys: loadKeys(),
+  pendingPrompt: "",
+});
 
-export function getKeys(): AIKey[] {
-  return loadKeys()
+// ── CRUD helpers ────────────────────────────────────────────────────
+
+export function setPrompt(prompt: string) {
+  aiStore.setState((s) => ({ ...s, pendingPrompt: prompt }));
 }
 
 export function addKey(provider: AIProvider, key: string): void {
-  const keys = loadKeys().filter((k) => k.provider !== provider)
-  keys.push({ provider, key, addedAt: new Date().toISOString() })
-  saveKeys(keys)
+  const keys = aiStore.state.keys.filter((k) => k.provider !== provider);
+  const nextKeys = [...keys, { provider, key, addedAt: new Date().toISOString() }];
+  saveKeys(nextKeys);
+  aiStore.setState((s) => ({ ...s, keys: nextKeys }));
 }
 
 export function removeKey(provider: AIProvider): void {
-  saveKeys(loadKeys().filter((k) => k.provider !== provider))
-}
-
-export function hasAnyKey(): boolean {
-  return loadKeys().length > 0
+  const nextKeys = aiStore.state.keys.filter((k) => k.provider !== provider);
+  saveKeys(nextKeys);
+  aiStore.setState((s) => ({ ...s, keys: nextKeys }));
 }
 
 export function getKeyForProvider(provider: AIProvider): AIKey | undefined {
-  return loadKeys().find((k) => k.provider === provider)
+  return aiStore.state.keys.find((k) => k.provider === provider);
 }
 
-// ── React hook ───────────────────────────────────────────────────
+// ── Hook ─────────────────────────────────────────────────────────────
 
 export function useAIKeys() {
-  const [keys, setKeys] = useState<AIKey[]>([])
+  const [keys, setKeys] = useState<AIKey[]>(aiStore.state.keys);
 
   useEffect(() => {
-    setKeys(loadKeys())
-  }, [])
+    const sub = aiStore.subscribe(() => {
+      setKeys(aiStore.state.keys);
+    });
+    return () => sub.unsubscribe();
+  }, []);
 
-  const refresh = () => setKeys(loadKeys())
+  return { 
+    keys, 
+    add: addKey, 
+    remove: removeKey, 
+    hasAny: keys.length > 0 
+  };
+}
 
-  const add = (provider: AIProvider, key: string) => {
-    addKey(provider, key)
-    refresh()
-  }
+export function useAIPrompt() {
+  const [prompt, setPromptState] = useState(aiStore.state.pendingPrompt);
 
-  const remove = (provider: AIProvider) => {
-    removeKey(provider)
-    refresh()
-  }
+  useEffect(() => {
+    const sub = aiStore.subscribe(() => {
+      setPromptState(aiStore.state.pendingPrompt);
+    });
+    return () => sub.unsubscribe();
+  }, []);
 
-  return { keys, add, remove, hasAny: keys.length > 0 }
+  return { prompt, setPrompt };
 }

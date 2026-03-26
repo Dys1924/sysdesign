@@ -285,24 +285,19 @@ function ProjectsPage() {
           )}
 
           {filtered.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 bg-card border border-dashed rounded-2xl animate-in fade-in zoom-in-95 duration-500">
-              <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground mb-4">
-                <IconFolder size={32} stroke={1} />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground">
-                No projects found
-              </h3>
-              <p className="text-sm text-muted-foreground max-w-[280px] text-center mt-1 mb-6">
+            <div className="flex flex-col gap-4 items-center justify-center py-20 bg-card border border-dashed rounded-2xl animate-in fade-in zoom-in-95 duration-500">
+              <h3>No projects found</h3>
+              <p>
                 Invite your team or create your first architecture project to
                 get started.
               </p>
-              <button
+              <Button
+                icon={IconFolderPlus}
+                iconSide="right"
                 onClick={() => setModalOpen(true)}
-                className="inline-flex items-center gap-2 h-10 px-5 bg-foreground text-background rounded-lg font-bold hover:bg-foreground/90 transition-all"
               >
-                <IconPlus size={18} />
-                Create Project
-              </button>
+                New Project
+              </Button>
             </div>
           )}
         </div>

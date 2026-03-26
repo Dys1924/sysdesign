@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import {
   useAIKeys,
+  useAIPrompt,
   PROVIDER_META,
   type AIProvider,
 } from "../../store/ai.store";
@@ -226,6 +227,7 @@ interface AIPanelProps {
 
 export default function AIPanel({ onClose }: AIPanelProps) {
   const { keys } = useAIKeys();
+  const { prompt: sharedPrompt, setPrompt: setSharedPrompt } = useAIPrompt();
   const diagramMode = useCanvasStore((s) => s.diagramMode);
   const [prompt, setPrompt] = React.useState("");
   const [selectedProvider, setSelectedProvider] =
@@ -244,6 +246,15 @@ export default function AIPanel({ onClose }: AIPanelProps) {
       setSelectedProvider(keys[0].provider);
     }
   }, [keys, selectedProvider]);
+
+  // Sync with shared prompt from templates
+  React.useEffect(() => {
+    if (sharedPrompt) {
+      setPrompt(sharedPrompt);
+      setSharedPrompt(""); // Clear once consumed
+      textareaRef.current?.focus();
+    }
+  }, [sharedPrompt]);
 
   const canSend =
     prompt.trim().length > 0 && !!selectedProvider && status !== "loading";
