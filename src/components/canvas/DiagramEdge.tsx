@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   BaseEdge,
   getBezierPath,
@@ -6,7 +6,6 @@ import {
   type EdgeProps,
 } from "@xyflow/react";
 import { updateEdgeMeta } from "../../store/canvas.store";
-import { Input } from "../ui/input";
 
 /**
  * Custom edge component for the diagram.
@@ -35,6 +34,22 @@ export default function DiagramEdge({
 
   const [isEditing, setIsEditing] = useState(false);
   const [labelDraft, setLabelDraft] = useState((data?.label as string) || "");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Keep draft in sync with saved value when not editing
+  useEffect(() => {
+    if (!isEditing) {
+      setLabelDraft((data?.label as string) || "");
+    }
+  }, [data?.label, isEditing]);
+
+  // Auto-resize textarea height to fit content
+  useEffect(() => {
+    if (isEditing && textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [labelDraft, isEditing]);
 
   const commitEdit = () => {
     setIsEditing(false);
@@ -51,23 +66,14 @@ export default function DiagramEdge({
             position: "absolute",
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             background: "var(--card)",
-            // padding: "2px 6px",
-            // borderRadius: 6,
-            // fontSize: 6,
-            // fontWeight: 600,
-            // border: "1px solid var(--border)",
             color: "var(--foreground)",
             pointerEvents: "all",
             cursor: "pointer",
             zIndex: 10,
             maxWidth: "150px",
-            textAlign: "center",
-            wordWrap: "break-word",
-            whiteSpace: "normal",
           }}
           className="nodrag nopan rounded-md px-2.5 py-1 border text-[8px]!"
           onPointerDown={(e) => {
-            // Prevent XYFlow selection/dragging when interacting with label
             e.stopPropagation();
           }}
           onClick={(e) => {
@@ -76,18 +82,19 @@ export default function DiagramEdge({
           }}
         >
           {isEditing ? (
-            <Input
+            <textarea
+              ref={textareaRef}
               autoFocus
-              size="sm"
-              className="text-[10px]! p-0 nodrag focus-visible:border-none focus-visible:ring-0 shadow-none"
+              rows={1}
+              className="nodrag w-full resize-none overflow-hidden bg-transparent text-[8px] p-0 outline-none border-none focus:ring-0 shadow-none"
               value={labelDraft}
-              style={{
-                width: `${Math.max(40, labelDraft.length * 7)}px`,
-              }}
               onChange={(e) => setLabelDraft(e.target.value)}
               onBlur={commitEdit}
               onKeyDown={(e) => {
-                if (e.key === "Enter") commitEdit();
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  commitEdit();
+                }
                 if (e.key === "Escape") {
                   setLabelDraft((data?.label as string) || "");
                   setIsEditing(false);
@@ -95,9 +102,11 @@ export default function DiagramEdge({
               }}
             />
           ) : (
-            (data?.label as string) || (
-              <span className="opacity-50 text-[10px]!">+ label</span>
-            )
+            <span className="block w-full text-center text-[8px]! break-words">
+              {(data?.label as string) || (
+                <span className="opacity-75 text-[10px]">+ label</span>
+              )}
+            </span>
           )}
         </div>
       </EdgeLabelRenderer>
