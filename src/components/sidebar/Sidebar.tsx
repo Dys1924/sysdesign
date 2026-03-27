@@ -197,11 +197,13 @@ export default function Sidebar() {
     },
   );
 
+  const [searchQuery, setSearchQuery] = React.useState("");
+
   const toggleCategory = (cat: NodeCategory) => {
     setExpanded((prev) => ({ ...prev, [cat]: !prev[cat] }));
   };
 
-  const grouped = React.useMemo(() => {
+  const filteredGrouped = React.useMemo(() => {
     const items: Record<NodeCategory, NodeTemplate[]> = {
       microservice: [],
       cloud: [],
@@ -217,12 +219,42 @@ export default function Sidebar() {
       c4: [],
     };
 
-    REGISTRY.forEach((t) => items[t.category].push(t));
+    const query = searchQuery.toLowerCase().trim();
+
+    REGISTRY.forEach((t) => {
+      const matches =
+        !query ||
+        t.label.toLowerCase().includes(query) ||
+        t.description?.toLowerCase().includes(query) ||
+        t.category.toLowerCase().includes(query);
+
+      if (matches) {
+        items[t.category].push(t);
+      }
+    });
+
     Object.keys(items).forEach((cat) => {
       items[cat as NodeCategory].sort((a, b) => a.label.localeCompare(b.label));
     });
     return items;
-  }, []);
+  }, [searchQuery]);
+
+  // Auto-expand categories that have matches when searching
+  React.useEffect(() => {
+    if (searchQuery.trim()) {
+      const newExpanded = { ...expanded };
+      let changed = false;
+      Object.entries(filteredGrouped).forEach(([cat, items]) => {
+        if (items.length > 0 && !newExpanded[cat as NodeCategory]) {
+          newExpanded[cat as NodeCategory] = true;
+          changed = true;
+        }
+      });
+      if (changed) {
+        setExpanded(newExpanded);
+      }
+    }
+  }, [searchQuery, filteredGrouped]);
 
   const RailIcon = ({
     id,
@@ -328,6 +360,9 @@ export default function Sidebar() {
     </Tooltip>
   );
 
+  const isExporting = useCanvasStore((s) => s.isExporting);
+  if (isExporting) return null;
+
   return (
     <div className="relative flex h-full border-r border-border bg-background select-none transition-all duration-300">
       {/* Left Rail */}
@@ -413,13 +448,38 @@ export default function Sidebar() {
               </button>
             </div>
           </div>
+
+          {/* Search Bar */}
+          {(activeTab === "components" || activeTab === "c4") && (
+            <div className="relative group">
+              <TablerIcons.IconSearch
+                size={14}
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors"
+              />
+              <input
+                type="text"
+                placeholder="Search components..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-8 pl-8 pr-7 bg-muted/50 border-none rounded-[--radius] text-[11px] placeholder:text-muted-foreground/60 focus:ring-1 focus:ring-primary/20 outline-none transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5"
+                >
+                  <TablerIcons.IconX size={10} />
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto py-2 px-1 custom-scrollbar">
           {activeTab === "c4" &&
             (() => {
-              const C4_ABSTRACTIONS = [
+              const ALL_C4_ABSTRACTIONS = [
                 {
                   subtype: "c4-person",
                   label: "Person",
@@ -457,6 +517,14 @@ export default function Sidebar() {
                   description: "A building block inside a container",
                 },
               ];
+
+              const query = searchQuery.toLowerCase().trim();
+              const C4_ABSTRACTIONS = ALL_C4_ABSTRACTIONS.filter(
+                (a) =>
+                  !query ||
+                  a.label.toLowerCase().includes(query) ||
+                  a.description.toLowerCase().includes(query),
+              );
 
               return (
                 <div className="flex flex-col py-2">
@@ -541,6 +609,12 @@ export default function Sidebar() {
                       rename it (e.g. "Internet Banking System").
                     </p>
                   </div>
+                  {searchQuery && C4_ABSTRACTIONS.length === 0 && (
+                    <div className="p-8 text-center">
+                      <TablerIcons.IconSearchOff size={32} className="mx-auto text-muted-foreground/30 mb-2" />
+                      <p className="text-[11px] text-muted-foreground">No C4 abstractions found</p>
+                    </div>
+                  )}
                 </div>
               );
             })()}
@@ -549,7 +623,7 @@ export default function Sidebar() {
             CATEGORY_ORDER.map((cat) => {
               if (cat === "c4") return null;
               const style = CATEGORY_STYLE[cat];
-              const items = grouped[cat];
+              const items = filteredGrouped[cat];
               const isExpanded = expanded[cat];
               if (items.length === 0) return null;
 
@@ -590,6 +664,12 @@ export default function Sidebar() {
                 </div>
               );
             })}
+          {activeTab === "components" && searchQuery && Object.values(filteredGrouped).every(arr => arr.length === 0) && (
+            <div className="p-8 text-center">
+              <TablerIcons.IconSearchOff size={32} className="mx-auto text-muted-foreground/30 mb-2" />
+              <p className="text-[11px] text-muted-foreground">No components found</p>
+            </div>
+          )}
 
           {activeTab === "templates" && (
             <div className="flex flex-col py-2 px-1 gap-1">
