@@ -5,6 +5,8 @@ import DiagramCanvas from "../components/canvas/DiagramCanvas";
 import { useProjectStore, setActiveProject } from "../store/project.store";
 import { setDiagramMode } from "../store/canvas.store";
 import Container from "#/components/ui/container";
+import { IconFolderPlus } from "@tabler/icons-react";
+import { Button } from "#/components/ui/button";
 
 export const Route = createFileRoute("/$slug/c4" as any)({
   component: C4Page,
@@ -31,15 +33,15 @@ function C4Page() {
     return (
       <Container>
         <div className="flex flex-col h-screen items-center justify-center bg-background p-4">
-          <h1 className="text-xl font-bold mb-2 text-foreground">
-            Project not found
-          </h1>
-          <button
+          <h1>Project not found</h1>
+
+          <Button
+            icon={IconFolderPlus}
+            iconSide="right"
             onClick={() => navigate({ to: "/projects" })}
-            className="px-4 py-2 bg-primary text-white rounded-lg font-medium"
           >
             Browse Projects
-          </button>
+          </Button>
         </div>
       </Container>
     );

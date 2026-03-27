@@ -11,6 +11,8 @@ import ProjectSetupPopup from "../components/dashboard/ProjectSetupPopup";
 import Container from "#/components/ui/container";
 import type { ProjectType } from "../store/project.store";
 import { setDiagramMode } from "../store/canvas.store";
+import { Button } from "#/components/ui/button";
+import { IconFolderPlus } from "@tabler/icons-react";
 
 /**
  * Dynamic route for individual project canvases, identified by their slug.
@@ -47,7 +49,11 @@ function SlugPage() {
     }
   }, [project, activeProjectId, projects.length]);
 
-  const handleCreateProject = (name: string, type: ProjectType, description?: string) => {
+  const handleCreateProject = (
+    name: string,
+    type: ProjectType,
+    description?: string,
+  ) => {
     const newProject = createProject(name, type, description);
     if (!newProject) return;
     setModalOpen(false);
@@ -59,18 +65,16 @@ function SlugPage() {
     return (
       <Container>
         <div className="flex flex-col h-screen items-center justify-center bg-background p-4">
-          <h1 className="text-xl font-bold mb-2 text-foreground">
-            Project not found
-          </h1>
-          <p className="text-muted-foreground mb-6">
-            The project you"re looking for doesn"t exist or has been moved.
-          </p>
-          <button
+          <h1>Project not found</h1>
+          <p>The project you"re looking for doesn"t exist or has been moved.</p>
+
+          <Button
+            icon={IconFolderPlus}
+            iconSide="right"
             onClick={() => navigate({ to: "/projects" })}
-            className="px-4 py-2 bg-primary text-white rounded-lg font-medium"
           >
             Browse Projects
-          </button>
+          </Button>
         </div>
       </Container>
     );
