@@ -195,7 +195,7 @@ function DiagramNode({ id, data, selected, type }: NodeProps) {
     if (subtype === "sh-flow-diamond") {
       shapeClass = "";
       shapeStyle = { clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)" };
-    } else if (subtype === "sh-flow-circle" || subtype === "fe-user") {
+    } else if (subtype === "sh-flow-circle") {
       shapeClass =
         "rounded-full aspect-square flex flex-col items-center justify-center p-4";
     } else if (subtype === "sh-flow-para") {
