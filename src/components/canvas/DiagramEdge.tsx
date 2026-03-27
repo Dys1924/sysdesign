@@ -53,19 +53,19 @@ export default function DiagramEdge({
             background: "var(--card)",
             // padding: "2px 6px",
             // borderRadius: 6,
-            fontSize: 10,
+            // fontSize: 6,
             // fontWeight: 600,
             // border: "1px solid var(--border)",
             color: "var(--foreground)",
             pointerEvents: "all",
             cursor: "pointer",
             zIndex: 10,
-            maxWidth: "200px",
+            maxWidth: "150px",
             textAlign: "center",
             wordWrap: "break-word",
             whiteSpace: "normal",
           }}
-          className="nodrag nopan rounded-md px-2.5 py-1 border text-[10px]! leading-tight"
+          className="nodrag nopan rounded-md px-2.5 py-1 border text-[8px]!"
           onPointerDown={(e) => {
             // Prevent XYFlow selection/dragging when interacting with label
             e.stopPropagation();

@@ -64,7 +64,7 @@ export default function DiagramCanvas() {
   const snapToGrid = useCanvasStore((s) => s.snapToGrid);
   const isExporting = useCanvasStore((s) => s.isExporting);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const { fitView, getNodes } = useReactFlow();
+  const { fitView, getNodes, screenToFlowPosition } = useReactFlow();
   const [showDelete, setShowDelete] = useState(false);
   const [showHint, setShowHint] = useState(() => {
     if (typeof window !== "undefined") {
@@ -164,28 +164,41 @@ export default function DiagramCanvas() {
     e.dataTransfer.dropEffect = "move";
   }, []);
 
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    const raw = e.dataTransfer.getData("application/sysdesign");
-    if (!raw) return;
-    const template: NodeTemplate = JSON.parse(raw);
-    const rect = wrapRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    nodeCounter++;
-    const node: DiagramNode = {
-      id: `node-${nodeCounter}`,
-      type: "diagram",
-      position: { x: e.clientX - rect.left - 75, y: e.clientY - rect.top - 40 },
-      data: {
-        label: template.label,
-        category: template.category,
-        subtype: template.subtype,
-        icon: template.icon,
-        description: template.description,
-      },
-    };
-    addNode(node);
-  }, []);
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const raw = e.dataTransfer.getData("application/sysdesign");
+      if (!raw) return;
+      const template: NodeTemplate = JSON.parse(raw);
+
+      // Use screenToFlowPosition to correctly translate screen coordinates to the canvas
+      const position = screenToFlowPosition({
+        x: e.clientX,
+        y: e.clientY,
+      });
+
+      // Adjust position to center the node under the cursor
+      // Nodes typically have a fixed or estimated size, we'll offset by a reasonable default
+      position.x -= 75;
+      position.y -= 40;
+
+      nodeCounter++;
+      const node: DiagramNode = {
+        id: `node-${nodeCounter}`,
+        type: "diagram",
+        position,
+        data: {
+          label: template.label,
+          category: template.category,
+          subtype: template.subtype,
+          icon: template.icon,
+          description: template.description,
+        },
+      };
+      addNode(node);
+    },
+    [screenToFlowPosition],
+  );
 
   const onPaneClick = useCallback(() => {
     setEditingNodeId(null);
