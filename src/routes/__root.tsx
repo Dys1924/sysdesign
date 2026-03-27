@@ -11,6 +11,7 @@ import appCss from "../globals.css?url";
 import Toolbar from "../components/toolbar/Toolbar";
 import Footer from "../components/layout/Footer";
 import MobileBlock from "../components/layout/MobileBlock";
+import { useCanvasStore } from "../store/canvas.store";
 
 /**
  * The root route configuration for the entire application.
@@ -79,6 +80,8 @@ export const Route = createRootRoute({
  * Wraps all routes with necessary providers (theme, tooltips) and core layout (Toolbar, Footer).
  */
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const isExporting = useCanvasStore((s) => s.isExporting);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -90,11 +93,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             <MobileBlock />
             <ReactFlowProvider>
               <div className="flex flex-col h-screen overflow-hidden bg-background">
-                <Toolbar />
+                {!isExporting && <Toolbar />}
                 <div className="flex-1 flex overflow-y-auto relative">
                   {children}
                 </div>
-                <Footer />
+                {!isExporting && <Footer />}
               </div>
             </ReactFlowProvider>
           </TooltipProvider>

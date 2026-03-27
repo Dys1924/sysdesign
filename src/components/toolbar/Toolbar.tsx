@@ -22,6 +22,7 @@ import {
   clearCanvas,
   loadTemplate,
   redo,
+  setExportingState,
   toggleSnap,
   undo,
   useCanvasStore,
@@ -43,6 +44,7 @@ import { ThemeToggle } from "../ThemeToggle";
 import { Button } from "../ui/button";
 import ConfirmModal from "../ui/ConfirmModal";
 import { Logo } from "../ui/logo";
+import { cn } from "#/lib/utils";
 
 const EXPORT_OPTIONS = [
   { key: "png", label: "PNG image", desc: "Raster, 2× resolution" },
@@ -61,6 +63,7 @@ export default function Toolbar() {
   const snapToGrid = useCanvasStore((s) => s.snapToGrid);
   const historyIndex = useCanvasStore((s) => s.historyIndex);
   const historyLen = useCanvasStore((s) => s.history.length);
+  const isExporting = useCanvasStore((s) => s.isExporting);
 
   const user = useProjectStore((s) => s.user);
   const loading = useProjectStore((s) => s.loading);
@@ -135,6 +138,13 @@ export default function Toolbar() {
   const handleExport = async (key: string) => {
     setExporting(key);
     setExportOpen(false);
+
+    // Set exporting state to true to hide UI components
+    setExportingState(true);
+
+    // Small delay to ensure React state change reflects in the DOM
+    await new Promise((r) => setTimeout(r, 100));
+
     try {
       if (key === "png") await exportPng();
       else if (key === "svg") await exportSvgFile();
@@ -142,13 +152,19 @@ export default function Toolbar() {
       else if (key === "terraform") exportTerraform(nodes, edges);
       else if (key === "dsl") exportStructurizr(nodes, edges);
     } finally {
+      setExportingState(false);
       setExporting(null);
     }
   };
 
   return (
     <>
-      <header className="h-12 flex items-center justify-between px-4 border-b bg-background shrink-0 relative z-50">
+      <header
+        className={cn(
+          "h-12 flex items-center justify-between px-4 border-b bg-background shrink-0 relative z-50 transition-all",
+          isExporting && "opacity-0 invisible h-0 border-none",
+        )}
+      >
         <ConfirmModal
           open={!!templateConfirm}
           title="Load Architecture Template?"
@@ -379,7 +395,7 @@ export default function Toolbar() {
       </header>
 
       {/* Floating Bottom Toolbar — Design System Center Dock */}
-      {isCanvasRoute && (
+      {isCanvasRoute && !isExporting && (
         <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="flex items-center gap-1 p-1 bg-card border rounded-[--radius] shadow-xl">
             {/* History Dock */}

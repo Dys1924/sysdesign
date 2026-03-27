@@ -44,6 +44,8 @@ export interface CanvasState {
   editingNodeId: string | null
   /** The current diagramming mode (affects palette and styles) */
   diagramMode: 'architecture' | 'c4'
+  /** Whether the canvas is currently being exported (hides UI) */
+  isExporting: boolean
 }
 
 const DEFAULT_CANVAS_STATE: CanvasState = {
@@ -55,6 +57,7 @@ const DEFAULT_CANVAS_STATE: CanvasState = {
   snapToGrid: false,
   editingNodeId: null,
   diagramMode: 'architecture',
+  isExporting: false,
 }
 
 async function load(): Promise<Partial<CanvasState>> {
@@ -476,6 +479,14 @@ export function setEditingNodeId(id: string | null) {
  */
 export function setDiagramMode(mode: 'architecture' | 'c4') {
   canvasStore.setState((s) => ({ ...s, diagramMode: mode }));
+}
+
+/**
+ * Sets the exporting state of the canvas.
+ * @param exporting - Whether the canvas is being exported
+ */
+export function setExportingState(exporting: boolean) {
+  canvasStore.setState((s) => ({ ...s, isExporting: exporting }))
 }
 
 /**

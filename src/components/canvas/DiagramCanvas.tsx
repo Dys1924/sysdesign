@@ -62,6 +62,7 @@ export default function DiagramCanvas() {
   const nodes = useCanvasStore((s) => s.nodes);
   const edges = useCanvasStore((s) => s.edges);
   const snapToGrid = useCanvasStore((s) => s.snapToGrid);
+  const isExporting = useCanvasStore((s) => s.isExporting);
   const wrapRef = useRef<HTMLDivElement>(null);
   const { fitView, getNodes } = useReactFlow();
   const [showDelete, setShowDelete] = useState(false);
@@ -227,19 +228,21 @@ export default function DiagramCanvas() {
         snapToGrid={snapToGrid}
         snapGrid={[20, 20]}
       >
-        <Background color="var(--border)" gap={20} size={1} />
-        <Controls />
-        <MiniMap
-          pannable
-          zoomable
-          nodeColor={(n) => {
-            const cat = (n.data as { category?: string })?.category;
-            return cat
-              ? (CATEGORY_STYLE[cat as keyof typeof CATEGORY_STYLE]?.color ??
-                  "#aaa")
-              : "#aaa";
-          }}
-        />
+        {!isExporting && <Background color="var(--border)" gap={20} size={1} />}
+        {!isExporting && <Controls />}
+        {!isExporting && (
+          <MiniMap
+            pannable
+            zoomable
+            nodeColor={(n) => {
+              const cat = (n.data as { category?: string })?.category;
+              return cat
+                ? (CATEGORY_STYLE[cat as keyof typeof CATEGORY_STYLE]?.color ??
+                    "#aaa")
+                : "#aaa";
+            }}
+          />
+        )}
       </ReactFlow>
 
       {/* Delete Confirmation Modal */}
@@ -282,7 +285,8 @@ export default function DiagramCanvas() {
         </div>
       )}
       {/* Navigation Tips Toggle & Hint */}
-      <div className="absolute right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col items-end gap-3 pointer-events-none">
+      {!isExporting && (
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col items-end gap-3 pointer-events-none">
         {showHint && (
           <div className="animate-in slide-in-from-right-4 fade-in duration-300 pointer-events-auto">
             <div className="relative bg-card border border-border rounded-[--radius] p-5 shadow-2xl w-[260px] overflow-hidden">
@@ -413,6 +417,7 @@ export default function DiagramCanvas() {
           <IconInfoCircle size={22} />
         </Button>
       </div>
+      )}
     </div>
   );
 }
