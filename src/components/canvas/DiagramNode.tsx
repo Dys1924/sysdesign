@@ -309,7 +309,7 @@ function DiagramNode({ id, data, selected, type }: NodeProps) {
               </Button>
             </div>
           ) : (
-            <h6 className="text-[9px] font-medium uppercase tracking-widest cursor-text text-foreground">
+            <h6 className="text-[9px] font-medium uppercase tracking-widest cursor-text text-foreground wrap-break-word leading-tight">
               {meta.label as string}
             </h6>
           )}
@@ -521,7 +521,7 @@ function DiagramNode({ id, data, selected, type }: NodeProps) {
             {!isFlow && <IconPencilBolt size={8} stroke={1.8} />}
             <h6
               className={cn(
-                "font-semibold",
+                "font-semibold wrap-break-word leading-tight",
                 isFlow ? "text-sm text-[8px]" : "text-[8px]",
               )}
             >

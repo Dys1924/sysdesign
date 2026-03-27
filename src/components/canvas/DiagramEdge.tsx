@@ -60,8 +60,12 @@ export default function DiagramEdge({
             pointerEvents: "all",
             cursor: "pointer",
             zIndex: 10,
+            maxWidth: "200px",
+            textAlign: "center",
+            wordWrap: "break-word",
+            whiteSpace: "normal",
           }}
-          className="nodrag nopan rounded-md px-2 border text-[10px]!"
+          className="nodrag nopan rounded-md px-2.5 py-1 border text-[10px]! leading-tight"
           onPointerDown={(e) => {
             // Prevent XYFlow selection/dragging when interacting with label
             e.stopPropagation();
